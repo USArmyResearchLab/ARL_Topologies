@@ -1,0 +1,66 @@
+! Database Title     exotxt                          2013/08/07                       1.23                           
+cubit(C:/Users/raymond.a.wildman/Desktop/bctesttrimesh.e): 11/04/2016: 10:46:50 
+! Database initial variables
+         2      4.98        32     ! dimensions, version number, name length
+         4         2         1     ! nodes, elements, element blocks
+         1         0               ! #node sets, #side sets
+         2         2               ! len: node set list, dist fact length
+         0         0         0     ! side sets len: element, node , dist fact
+! Coordinate names
+x                                y                               
+! Coordinates
+   5.0000000E-01  -5.0000000E-01
+   5.0000000E-01   5.0000000E-01
+  -5.0000000E-01   5.0000000E-01
+  -5.0000000E-01  -5.0000000E-01
+! Node number map
+sequence 1..numnp
+! Element number map
+sequence 1..numel
+! Element order map
+sequence 1..numel
+! Element block    1
+         1         2      TRI3      ! ID, elements, element type
+         3         1      ! nodes per element, attributes
+! Connectivity
+         1         2         3
+         1         3         4
+! Attributes
+   1.0000000E+00
+   1.0000000E+00
+! Node sets                           1
+! Len node set node list              2
+! Len node set dist fact list         2
+! Nodal point set         1
+         1         2         2      ! ID, nodes, dist factors
+         1     1.0000000E+00
+         2     1.0000000E+00
+! Properties
+         1            ! Number of ELEMENT BLOCK Properties
+! Property Name: 
+ID                              
+! Property Value(s): 
+         1
+         1            ! Number of NODE SET Properties
+! Property Name: 
+ID                              
+! Property Value(s): 
+         1
+         0            ! Number of SIDE SET Properties
+! QA Records
+         2      ! QA records
+CUBIT                           
+13.2                            
+11/04/2016                      
+10:46:50                        
+exotxt                          
+ 1.23                           
+20161104                        
+10:48:37                        
+! Information Records
+         0      ! information records
+! Variable names
+         0         0         0      ! global, nodal, element variables
+
+
+

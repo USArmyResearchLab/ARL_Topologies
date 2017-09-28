@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topologies xmlns="http://tempuri.org/XMLSchema.xsd">
+	<representation type="mesh3d" tag="rep1"/>
+	<optimizer type="oc" tag="opt1"/>
+	<objective_function shared_library="@CMAKE_INSTALL_PREFIX@/lib/libfemofv.so" input_file="tof_exo_3d.xml"/>
+	<initial_guess type="constant">
+		<constant_val>0.5</constant_val>
+	</initial_guess>
+	<num_processors_per_ofv>1</num_processors_per_ofv>
+<!--	<output type="volume">
+		<file_name>femvol</file_name>
+		<file_format>vtk</file_format>
+	</output>-->
+</topologies>
+
+<mesh3d tag="rep1" xmlns="http://tempuri.org/XMLSchema.xsd">
+  <file_format>exodusII</file_format>
+  <file_name>test2blocks3d.txt</file_name>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <threshold>0.5</threshold>
+	<fixed_block block_id="2" value="1."/>
+</mesh3d>
+
+<oc tag="opt1" xmlns="http://tempuri.org/XMLSchema.xsd">
+  <filter_size>0.11</filter_size>
+  <stop_tol>0.01</stop_tol>
+  <max_iterations>40</max_iterations>
+</oc>
+

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fem xmlns="http://tempuri.org/XMLSchema.xsd">
+  <dimension>3</dimension>
+  <volume_fraction>0.5</volume_fraction>
+  <youngs_modulus>1.</youngs_modulus>
+  <poissons_ratio>0.25</poissons_ratio>
+  <geo_bc>
+    <x_support>true</x_support>
+    <y_support>true</y_support>
+    <z_support>true</z_support>
+    <geometry type="xy_plane">
+      <intercept>-0.25</intercept>
+    </geometry>
+  </geo_bc>
+	<load_case>
+		<geo_lc>
+			<load_vector>0.<d/>0.<d/>-1.</load_vector>
+			<geometry type="xy_plane">
+				<intercept>0.25</intercept>
+			</geometry>
+		</geo_lc>
+	</load_case>
+</fem>

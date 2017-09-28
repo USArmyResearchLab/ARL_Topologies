@@ -1,0 +1,17 @@
+<topologies>
+	<initial_guess type="constant">
+		<constant_val>1.</constant_val>
+	</initial_guess>
+</topologies>
+<initial_guess2 type="constant_with_noise">
+	<constant_val>2.</constant_val>
+	<noise_min>3.</noise_min>
+	<noise_max>4.</noise_max>
+</initial_guess2>
+<initial_guess3 type="random">
+	<noise_min>5.</noise_min>
+  <noise_max>6.</noise_max>
+</initial_guess3>
+<initial_guess4 type="file">
+	<file_name>testfile.txt</file_name>
+</initial_guess4>

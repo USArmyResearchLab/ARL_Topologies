@@ -1,0 +1,8 @@
+<representation type="mesh3d" tag="rep1"/>
+<mesh3d tag="rep1">
+  <file_format>exodusii</file_format>
+  <file_name>cylinder.txt</file_name>
+	<minimum_density>1.e-3</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <threshold>0.5</threshold>
+</mesh3d>

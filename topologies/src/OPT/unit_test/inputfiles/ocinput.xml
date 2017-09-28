@@ -1,0 +1,5 @@
+<optimizer type="oc" tag="opt1"/>
+<oc tag="opt1">
+  <stop_tol>1e-14</stop_tol>
+  <max_iterations>100</max_iterations>
+</oc>

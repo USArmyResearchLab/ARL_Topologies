@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<fem xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimension>2</dimension>
+	<mesh_file>testtri.msh</mesh_file>
+	<file_format>gmsh</file_format>
+	<volume_fraction>0.5</volume_fraction>
+	<youngs_modulus>1.</youngs_modulus>
+	<poissons_ratio>0.25</poissons_ratio>
+	<file_bc>
+		<node_set_id>8</node_set_id>
+		<x_support>true</x_support>
+		<y_support>true</y_support>
+	</file_bc>
+	<load_case>
+		<file_lc>
+			<node_set_id>7</node_set_id>
+			<load_vector>0.<d/>-1.</load_vector>
+		</file_lc>
+	</load_case>
+</fem>

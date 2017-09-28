@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<fem xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimension>2</dimension>
+	<mesh_file>testquad.txt</mesh_file>
+	<file_format>exodusII</file_format>
+	<volume_fraction>0.5</volume_fraction>
+	<youngs_modulus>1.</youngs_modulus>
+	<poissons_ratio>0.25</poissons_ratio>
+	<file_bc>
+		<node_set_id>1</node_set_id>
+		<x_support>true</x_support>
+		<y_support>true</y_support>
+	</file_bc>
+	<!--Separate load cases can be specified, each will run a separate FEM solve-->
+	<load_case> <!--First load case-->
+		<geo_lc>
+			<load_vector>0.<d/>-1.</load_vector>
+			<geometry type="point_2">
+				<point_2 x="0.5" y="-0.5"/>
+			</geometry>
+		</geo_lc>
+	</load_case>
+	<load_case> <!--Second load case-->
+    <geo_lc>
+      <load_vector>0.<d/>1.</load_vector>
+      <geometry type="point_2">
+        <point_2 x="0.5" y="0.5"/>
+      </geometry>
+    </geo_lc>
+  </load_case>
+</fem>

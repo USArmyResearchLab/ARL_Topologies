@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<oc tag="opt1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<filter_size>0.101</filter_size>
+	<stop_tol>0.01</stop_tol>
+	<max_iterations>30</max_iterations>
+</oc>

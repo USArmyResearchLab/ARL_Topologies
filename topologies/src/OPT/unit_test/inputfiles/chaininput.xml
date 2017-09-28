@@ -1,0 +1,26 @@
+<optimizer type="chain" tag="opt1"/>
+<chain tag="opt1">
+	<optimizer type="ga" tag="opt2"/>
+	<optimizer type="bfgs" tag="opt3"/>
+</chain>
+
+<ga tag="opt2">
+  <num_generations>100</num_generations>
+  <population_size>30</population_size>
+  <crossover_rate>0.8</crossover_rate>
+  <mutation_rate>0.05</mutation_rate>
+  <mutation_range>0.1</mutation_range>
+  <num_tourn>2</num_tourn>
+  <num_elitism>1</num_elitism>
+  <mutation_radius>0</mutation_radius>
+  <constraint_penalty>1.e5</constraint_penalty>
+  <penalty_power>2.</penalty_power>
+</ga>
+
+<bfgs tag="opt3">
+  <stop_tol>1e-12.</stop_tol>
+  <max_iterations>100</max_iterations>
+  <constraint_penalty>1e5</constraint_penalty>
+  <penalty_power>2.</penalty_power>
+</bfgs>
+

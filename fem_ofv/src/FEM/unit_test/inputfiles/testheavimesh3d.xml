@@ -1,0 +1,18 @@
+<representation type="heavisidemesh3d" tag="rep1"/>
+<heavisidemesh3d tag="rep1">
+  <file_format>stl</file_format>
+  <file_name>rectsolid.stl</file_name>
+  <mesh_parameters dim="3">
+		<tet_mesh_cell_size>0.05</tet_mesh_cell_size>
+    <tet_mesh_edge_size>1.</tet_mesh_edge_size>
+    <tet_mesh_facet_angle>10.</tet_mesh_facet_angle>
+    <tet_mesh_facet_size>0.5</tet_mesh_facet_size>
+    <tet_mesh_facet_distance>0.5</tet_mesh_facet_distance>
+    <tet_mesh_cell_radius_edge_ratio>2.</tet_mesh_cell_radius_edge_ratio>
+  </mesh_parameters>
+	<minimum_density>1.e-3</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <threshold>0.5</threshold>
+	<filter_radius>1.1</filter_radius>
+	<heaviside_beta>1.e-12</heaviside_beta>
+</heavisidemesh3d>

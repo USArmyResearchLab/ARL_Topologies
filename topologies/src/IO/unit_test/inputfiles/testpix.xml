@@ -1,0 +1,36 @@
+<representation type="pixel" tag="rep1"/>
+<representation type="heaviside2d" tag="rep2"/>
+<representation type="voxel" tag="rep3"/>
+<representation type="heaviside3d" tag="rep4"/>
+<pixel tag="rep1">
+  <!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+  <dimensions>10.<d/>1.</dimensions>
+  <discretization_size>300<d/>30</discretization_size>
+  <mesh_element_type>quad</mesh_element_type>
+  <minimum_density>10.</minimum_density>
+  <penalty_power>30.</penalty_power>
+  <threshold>50.</threshold>
+</pixel>
+<!--Default values-->
+<heaviside2d tag="rep2">
+  <dimensions>1.<d/>1.</dimensions>
+  <discretization_size>30<d/>30</discretization_size>
+	<mesh_element_type>tri</mesh_element_type>
+	<heaviside_beta>0.1</heaviside_beta>
+	<filter_radius>1.1</filter_radius>
+</heaviside2d>
+<voxel tag="rep3">
+  <!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+  <dimensions>1.<d/>0.2<d/>1.</dimensions>
+  <discretization_size>20<d/>4<d/>20</discretization_size>
+  <mesh_element_type>hex</mesh_element_type>
+  <minimum_density>1.</minimum_density>
+  <penalty_power>2.</penalty_power>
+  <threshold>1.</threshold>
+</voxel>
+<heaviside3d tag="rep4">
+  <!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+  <dimensions>1.<d/>2.<d/>3.</dimensions>
+  <discretization_size>2<d/>4<d/>6</discretization_size>
+	<mesh_element_type>tet</mesh_element_type>
+</heaviside3d>

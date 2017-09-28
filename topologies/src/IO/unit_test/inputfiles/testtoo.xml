@@ -1,0 +1,22 @@
+<optimizer type="oc" tag="opt1"/>
+<optimizer type="mma" tag="opt2"/>
+<optimizer type="bfgs" tag="opt3"/>
+<optimizer type="gd" tag="opt4"/>
+<oc tag="opt1">
+  <filter_size>1.</filter_size>
+  <stop_tol>2.</stop_tol>
+  <max_iterations>3</max_iterations>
+</oc>
+<mma tag="opt2">
+</mma>
+<bfgs tag="opt3">
+  <filter_size>1.</filter_size>
+  <stop_tol>2.</stop_tol>
+  <max_iterations>3</max_iterations>
+	<constraint_penalty>4.</constraint_penalty>
+	<penalty_power>5.</penalty_power>
+</bfgs>
+<gd tag="opt4">
+	<max_step>1.</max_step>
+	<step_size>2.</step_size>
+</gd>

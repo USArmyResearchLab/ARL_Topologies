@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<mesh2d tag="rep1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<file_format>exodusII</file_format>
+	<file_name>@CMAKE_INSTALL_PREFIX@/examples/inpfiles/quad_mesh_hole.txt</file_name>
+<!--	<file_name>inpfiles/quad_elem_mesh.txt</file_name>-->
+	<minimum_density>1.e-3</minimum_density>
+	<penalty_power>3.</penalty_power>
+	<threshold>0.5</threshold>
+</mesh2d>

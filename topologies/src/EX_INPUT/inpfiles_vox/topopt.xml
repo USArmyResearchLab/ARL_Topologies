@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topologies xmlns="http://tempuri.org/XMLSchema.xsd">
+	<representation type="voxel" tag="rep1"/>
+	<optimizer type="oc" tag="opt1"/>
+	<objective_function shared_library="@CMAKE_INSTALL_PREFIX@/lib/libfemofv.so" input_file="@CMAKE_INSTALL_PREFIX@/examples/inpfiles_vox/tof_geo.xml"/>
+	<initial_guess type="constant">
+		<constant_val>0.5</constant_val>
+	</initial_guess>
+	<num_processors_per_ofv>1</num_processors_per_ofv>
+	<!-- OUTPUT SECTION -->
+	<output type="volume">
+		<file_name>voxres</file_name>
+		<file_format>vtk</file_format>
+		<output_period>5</output_period>
+		<overwrite>false</overwrite>
+		<write_periodic_results>true</write_periodic_results>
+	</output>
+	<output type="volume">
+    <file_name>femvol</file_name>
+    <file_format>gmsh</file_format>
+    <write_periodic_results>true</write_periodic_results>
+    <write_final_result>true</write_final_result>
+    <output_period>5</output_period>
+  </output>
+	<output type="surface">
+		<file_name>surf</file_name>
+		<file_format>stl</file_format>
+		<write_final_result>true</write_final_result>
+	</output>
+	<output type="raw_data">
+		<file_name>data</file_name>
+		<file_format>default</file_format>
+		<overwrite>yes</overwrite>
+		<write_periodic_results>y</write_periodic_results>
+		<output_period>1</output_period>
+		<write_final_result>no</write_final_result>
+	</output>
+</topologies>
+<!-- Representation definition, can also be defined in separate file -->
+<voxel tag="rep1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+	<dimensions>1.<d/>0.2<d/>1.</dimensions>
+	<discretization_size>20<d/>4<d/>20</discretization_size>
+	<mesh_element_type>hex</mesh_element_type>
+	<minimum_density>1.e-3</minimum_density>
+	<penalty_power>3.</penalty_power>
+	<threshold>0.5</threshold>
+</voxel>
+<!-- Optimizer definition, can also be defined in separate file -->
+<oc tag="opt1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<filter_size>0.08</filter_size>
+	<stop_tol>0.01</stop_tol>
+	<max_iterations>40</max_iterations>
+</oc>

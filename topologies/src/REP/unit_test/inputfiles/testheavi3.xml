@@ -1,0 +1,11 @@
+<representation type="heaviside3d" tag="rep1"/>
+<heaviside3d tag="rep1">
+	<dimensions>1.<d/>0.2<d/>1.5</dimensions>
+  <discretization_size>10<d/>2<d/>15</discretization_size>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>5.</penalty_power>
+  <threshold>0.1</threshold>
+	<filter_radius>1.5</filter_radius>
+	<heaviside_beta>1.e-12</heaviside_beta>
+	<mesh_element_type>tet</mesh_element_type>
+</heaviside3d>

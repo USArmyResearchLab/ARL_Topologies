@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<fem xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimension>2</dimension>
+	<!--<exodus_mesh_file>inpfiles/quad_elem_mesh.txt</exodus_mesh_file>-->
+	<!--<exodus_mesh_file>inpfiles/trie_elem_mesh.txt</exodus_mesh_file>-->
+	<volume_fraction>0.5</volume_fraction>
+	<youngs_modulus>1.</youngs_modulus>
+	<poissons_ratio>0.25</poissons_ratio>
+	<geo_bc>
+		<x_support>true</x_support>
+		<y_support>true</y_support>
+		<geometry type="v_line">
+			<intercept>-0.5</intercept>
+		</geometry>
+	</geo_bc>
+	<load_case>
+<!--	<geo_lc>
+ 	   <load_vector>-1.<d/>0.</load_vector>
+ 	   <geometry type="line_segment_2">
+ 	     <point_2 x="0.5" y="-0.5"/>
+				<point_2 x="0.5" y="0.5"/>
+ 	   </geometry>
+		</geo_lc>-->
+		<geo_lc>
+			<load_vector>0.<d/>-1.</load_vector>
+			<geometry type="point_2">
+				<point_2 x="0.5" y="-0.5"/>
+			</geometry>
+		</geo_lc>
+	</load_case>
+</fem>

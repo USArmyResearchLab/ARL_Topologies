@@ -1,0 +1,33 @@
+<rootnode>
+	<!-- PC data-->
+	<doubledata>10.</doubledata>
+	<unsigneddata> 3</unsigneddata>
+	<intdata> -2 </intdata>
+	<stringdata>This is a string.</stringdata>
+	<booldata1>y </booldata1>
+	<booldata2>t</booldata2>
+	<booldata3>n</booldata3>
+	<booldata4>f</booldata4>
+	<!-- Vectors -->
+	<doublevec>1.<d/>2.<d/>3.</doublevec>
+	<unsignedvec>4<d/> 5<d/>6 <d/> 7 </unsignedvec>
+	<intvec>-1<d/>-2<d/>3</intvec>
+	<!-- Attributes-->
+	<doubleattr attr="10."/>
+	<unsignedattr attr="3"/>
+	<intattr attr="-2"/>
+	<stringattr attr="This is a string."/>
+	<boolattr attr1="y" attr2="t" attr3="n" attr4="f"/>
+	<!--Path test-->
+	<GET>
+		<nothing/>
+		<Node>
+			<blah/>
+			<path>
+				<done/>
+			</path>
+			<blah2>2.</blah2>
+		</Node>
+		<more_nothing/>
+	</GET>
+</rootnode>

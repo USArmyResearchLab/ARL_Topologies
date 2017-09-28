@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<fem xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimension>3</dimension>
+	<mesh_file>inpfiles_2blocks/test2blocks3d.txt</mesh_file>
+	<file_format>exodusii<file_format/>
+	<volume_fraction>0.5</volume_fraction>
+	<youngs_modulus>1.</youngs_modulus>
+	<poissons_ratio>0.25</poissons_ratio>
+	<file_bc>
+		<node_set_id>1</node_set_id>
+		<x_support>true</x_support>
+		<y_support>true</y_support>
+		<z_support>true</z_support>
+	</file_bc>
+	<load_case>
+		<file_lc>
+			<node_set_id>2</node_set_id>
+			<load_vector>0.<d/>-1.<d/>0.</load_vector>
+		</file_lc>
+	</load_case>
+</fem>

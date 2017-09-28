@@ -1,0 +1,21 @@
+﻿<representation type="csg2d" tag="rep1"/>
+<representation type="csg3d" tag="rep2"/>
+<!-- Representation definition, can also be defined in separate file -->
+<csg2d tag="rep1">
+	<!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+	<region_dimensions>1.<d/>2.</region_dimensions>
+	<mesh_sizes>3<d/>4</mesh_sizes>
+	<num_shapes>5<d/>6</num_shapes>
+	<num_points_per_shape>10</num_points_per_shape>
+	<minimum_density>1.</minimum_density>
+	<use_affine>yes</use_affine>
+	<shapes_are_holes>yes</shapes_are_holes>
+</csg2d>
+
+<csg3d tag="rep2">
+  <region_dimensions>1.<d/>2.<d/>3.</region_dimensions>
+  <mesh_sizes>4<d/>5<d/>6</mesh_sizes>
+  <num_shapes>7<d/>8<d/>9</num_shapes>
+  <num_points_per_shape>10</num_points_per_shape>
+</csg3d>
+

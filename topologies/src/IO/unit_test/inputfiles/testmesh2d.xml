@@ -1,0 +1,55 @@
+<representation type="mesh2d" tag="rep1"/>
+<representation type="heavisidemesh2d" tag="rep2"/>
+<representation type="mesh3d" tag="rep3"/>
+<representation type="heavisidemesh3d" tag="rep4"/>
+<!-- Representations are searched by type and tag, so more than one can be defined in a single file-->
+<mesh2d tag="rep1">
+  <file_format>polygon</file_format>
+  <polygon_list>
+    <polygon_2>
+      <point_2 x="0." y="0."/>
+      <point_2 x="1." y="0."/>
+      <point_2 x="0." y="1."/>
+    </polygon_2>
+		<polygon_2>
+      <point_2 x="0.1" y="0.1"/>
+      <point_2 x="0.2" y="0.1"/>
+      <point_2 x="0.2" y="0.2"/>
+      <point_2 x="0.1" y="0.2"/>
+    </polygon_2>
+  </polygon_list>
+  <minimum_density>1.</minimum_density>
+  <penalty_power>2.</penalty_power>
+  <threshold>3.</threshold>
+  <mesh_parameters dim="2">
+    <tri_mesh_edge_size>0.1</tri_mesh_edge_size>
+    <tri_mesh_edge_angle>10.</tri_mesh_edge_angle>
+  </mesh_parameters>
+</mesh2d>
+
+<heavisidemesh2d tag="rep2">
+	<file_format>exodusii</file_format>
+	<file_name>test.txt</file_name>
+	<heaviside_beta>1.</heaviside_beta>
+	<filter_radius>2.</filter_radius>
+	<fixed_block block_id="2" value="1."/>
+	<fixed_block block_id="3" value="0.5"/>
+</heavisidemesh2d>
+
+<mesh3d tag="rep3">
+  <file_format>stl</file_format>
+  <file_name>test.txt</file_name>
+	<mesh_parameters dim="3">
+    <tet_mesh_edge_size>1.</tet_mesh_edge_size>
+    <tet_mesh_facet_angle>2.</tet_mesh_facet_angle>
+		<tet_mesh_facet_size>3.</tet_mesh_facet_size>
+		<tet_mesh_facet_distance>4.</tet_mesh_facet_distance>
+		<tet_mesh_cell_radius_edge_ratio>5.</tet_mesh_cell_radius_edge_ratio>
+		<tet_mesh_cell_size>6.</tet_mesh_cell_size>
+  </mesh_parameters>
+</mesh3d>
+
+<heavisidemesh3d tag="rep4">
+  <file_format>exodusii</file_format>
+  <file_name>test.txt</file_name>
+</heavisidemesh3d>

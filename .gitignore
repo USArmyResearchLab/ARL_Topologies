@@ -1,0 +1,10 @@
+# Build directories
+builddir/
+
+# Doxygen
+dox/
+Doxyfile
+
+# Install files
+bin/
+lib/

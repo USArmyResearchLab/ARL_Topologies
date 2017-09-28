@@ -1,0 +1,31 @@
+<topologies>
+	<output type="volume">
+		<file_name>vol</file_name>
+		<file_format>vtk</file_format>
+		<output_period>5</output_period>
+		<overwrite>false</overwrite>
+		<write_periodic_results>true</write_periodic_results>
+	</output>
+</topologies>
+<output2 type="surface">
+	<file_name>segs</file_name>
+	<file_format>matlab</file_format>
+	<write_final_result>true</write_final_result>
+</output2>
+<output3 type="raw_data">
+	<file_name>data</file_name>
+	<file_format>default</file_format>
+	<overwrite>yes</overwrite>
+	<write_periodic_results>y</write_periodic_results>
+	<output_period>1</output_period>
+	<write_final_result>no</write_final_result>
+</output3>
+<output4 type="extrude">
+	<file_name>extrusion</file_name>
+	<file_format>stl</file_format>
+	<extrusion_length>0.1</extrusion_length>
+</output4>
+<output5 type="objective_function_result">
+	<file_name>ofvres</file_name>
+	<file_format>default</file_format>
+</output5>

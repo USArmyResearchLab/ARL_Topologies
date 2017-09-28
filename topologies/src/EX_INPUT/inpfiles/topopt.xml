@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- An example of a 2D problem using a mesh input and multiple files for the representation and optimizer input files -->
+<topologies>
+	<representation type="mesh2d" tag="rep1" input_file="@CMAKE_INSTALL_PREFIX@/examples/inpfiles/torinp.xml"/>
+	<optimizer type="oc" tag="opt1" input_file="@CMAKE_INSTALL_PREFIX@/examples/inpfiles/tooinp.xml"/>
+	<objective_function shared_library="@CMAKE_INSTALL_PREFIX@/lib/libfemofv.so" input_file="@CMAKE_INSTALL_PREFIX@/examples/inpfiles/tof_geo.xml"/>
+	<initial_guess type="constant">
+		<constant_val>0.5</constant_val>
+	</initial_guess>
+	<num_processors_per_ofv>1</num_processors_per_ofv>
+	<output type="volume">
+		<file_name>femvol</file_name>
+		<file_format>matlab</file_format>
+		<output_period>5</output_period>
+		<overwrite>false</overwrite>
+		<write_periodic_results>true</write_periodic_results>
+	</output>
+	<output type="surface">
+		<file_name>femsegs</file_name>
+		<file_format>matlab</file_format>
+		<write_final_result>true</write_final_result>
+	</output>
+</topologies>

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topologies xmlns="http://tempuri.org/XMLSchema.xsd">
+	<representation type="pixel" tag="rep1"/>
+	<optimizer type="oc" tag="opt1"/>
+	<objective_function shared_library="@CMAKE_INSTALL_PREFIX@/lib/libfemofv.so" input_file="tof_geo_1load.xml"/>
+	<initial_guess type="constant">
+		<constant_val>0.5</constant_val>
+	</initial_guess>
+</topologies>
+<!-- Representation definition, can also be defined in separate file -->
+<pixel tag="rep1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+	<dimensions>1.<d/>1.</dimensions>
+	<discretization_size>30<d/>30</discretization_size>
+	<mesh_element_type>tri</mesh_element_type>
+	<minimum_density>1.e-3</minimum_density>
+	<penalty_power>3.</penalty_power>
+	<threshold>0.5</threshold>
+</pixel>
+<!-- Optimizer definition, can also be defined in separate file -->
+<oc tag="opt1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<filter_size>0.101</filter_size>
+	<stop_tol>0.01</stop_tol>
+	<max_iterations>30</max_iterations>
+</oc>

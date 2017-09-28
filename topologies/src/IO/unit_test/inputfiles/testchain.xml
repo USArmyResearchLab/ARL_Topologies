@@ -1,0 +1,8 @@
+<optimizer type="chain" tag="ch1"/>
+<chain tag="ch1">
+	<optimizer type="oc" tag="opt1"/>
+	<nothing/>
+	<optimizer type="refine" tag="opt2"/>
+	<optimizer type="convert" tag="opt3"/>
+	<optimizer type="continuation" tag="opt4"/>
+</chain>

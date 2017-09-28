@@ -1,0 +1,9 @@
+<representation type="mesh2d" tag="rep1"/>
+<mesh2d tag="rep1">
+	<file_format>gmsh</file_format>
+  <file_name>testtri.msh</file_name>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>4.</penalty_power>
+  <threshold>0.25</threshold>
+</mesh2d>
+

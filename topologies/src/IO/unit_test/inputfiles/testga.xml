@@ -1,0 +1,24 @@
+<optimizer type="ga" tag="opt1"/>
+<optimizer type="pga" tag="opt2"/>
+<ga tag="opt1">
+  <num_generations>1</num_generations>
+  <population_size>2</population_size>
+  <crossover_rate>3.</crossover_rate>
+  <mutation_rate>4.</mutation_rate>
+  <mutation_range>5.</mutation_range>
+  <num_tourn>6</num_tourn>
+  <num_elitism>7</num_elitism>
+	<mutation_radius>8</mutation_radius>
+  <constraint_penalty>9.</constraint_penalty>
+  <penalty_power>10.</penalty_power>
+	<sharing_radius>11.</sharing_radius>
+</ga>
+<pga tag="opt2">
+  <num_generations>12</num_generations>
+  <population_size>13</population_size>
+  <crossover_rate>14.</crossover_rate>
+  <mutation_rate>15.</mutation_rate>
+  <mutation_range>16.</mutation_range>
+	<num_goals>3</num_goals>
+	<goal_weights>1<d/>2<d/>3<d/></goal_weights>
+</pga>

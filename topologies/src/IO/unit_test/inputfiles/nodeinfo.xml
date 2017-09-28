@@ -1,0 +1,26 @@
+<!--Representations-->
+<representation type="pixel" tag="testrep" input_file="test.xml"/>
+<representation type="heaviside2d" tag="testrep"/>
+<representation type="voxel" tag="testrep" input_file="test.xml"/>
+<representation type="heaviside3d" tag="testrep" input_file="test.xml"/>
+<representation type="csg2d" tag="testrep" input_file="test.xml"/>
+<representation type="csg3d" tag="testrep" input_file="test.xml"/>
+<representation type="mesh2d" tag="testrep" input_file="test.xml"/>
+<representation type="mesh3d" tag="testrep" input_file="test.xml"/>
+<representation type="heavisidemesh2d" tag="testrep" input_file="test.xml"/>
+<representation type="heavisidemesh3d" tag="testrep" input_file="test.xml"/>
+<!--Malformed nodes-->
+<representation type="heavisidemesh3d" />
+<representation tag="testrep" input_file="test.xml"/>
+<!--Optimizers-->
+<optimizer type="oc" tag="testopt" input_file="test.xml"/>
+<optimizer type="mma" tag="testopt"/>
+<optimizer type="bfgs" tag="testopt" input_file="test.xml"/>
+<optimizer type="ga" tag="testopt" input_file="test.xml"/>
+<optimizer type="pga" tag="testopt" input_file="test.xml"/>
+<optimizer type="gd" tag="testopt" input_file="test.xml"/>
+<optimizer type="chain" tag="testopt" input_file="test.xml"/>
+<optimizer type="refine" tag="testopt" input_file="test.xml"/>
+<optimizer type="convert" tag="testopt" input_file="test.xml"/>
+<optimizer type="continuation" tag="testopt" input_file="test.xml"/>
+

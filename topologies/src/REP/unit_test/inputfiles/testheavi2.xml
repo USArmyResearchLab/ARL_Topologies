@@ -1,0 +1,12 @@
+<representation type="heaviside2d" tag="rep1"/>
+<heaviside2d tag="rep1">
+  <!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+  <dimensions>1.<d/>2.</dimensions>
+  <discretization_size>15<d/>30</discretization_size>
+  <mesh_element_type>tri</mesh_element_type>
+  <minimum_density>0.001</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <threshold>0.5</threshold>
+	<heaviside_beta>1e-12</heaviside_beta>
+	<filter_radius>1.1</filter_radius>
+</heaviside2d>

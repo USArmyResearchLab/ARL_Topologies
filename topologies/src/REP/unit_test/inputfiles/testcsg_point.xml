@@ -1,0 +1,11 @@
+<representation type="csg2d" tag="rep1"/>
+<csg2d tag="rep1">
+  <!-- Lists need an xml node as a delimiter, used <d/> below but could be anything -->
+  <region_dimensions>1.<d/>2.</region_dimensions>
+  <mesh_sizes>6<d/>12</mesh_sizes>
+  <num_shapes>2<d/>3</num_shapes>
+  <num_points_per_shape>8</num_points_per_shape>
+  <minimum_density>1.e-3</minimum_density>
+  <use_affine>no</use_affine>
+  <shapes_are_holes>yes</shapes_are_holes>
+</csg2d>

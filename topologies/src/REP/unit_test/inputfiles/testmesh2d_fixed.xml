@@ -1,0 +1,11 @@
+<representation type="mesh2d" tag="rep1"/>
+<mesh2d tag="rep1">
+	<file_format>exodusii</file_format>
+  <file_name>testquad.txt</file_name>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>4.</penalty_power>
+  <threshold>0.25</threshold>
+	<!--The following sets all mesh densities in block 1 to 1.-->
+	<fixed_block block_id="1" value="1."/>
+</mesh2d>
+

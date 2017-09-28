@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topologies xmlns="http://tempuri.org/XMLSchema.xsd">
+	<representation type="heaviside3d" tag="rep1"/>
+	<optimizer type="chain" tag="opt1"/>
+	<objective_function shared_library="@CMAKE_INSTALL_PREFIX@/lib/libfemofv.so" input_file="tof_geo_3d.xml"/>
+	<initial_guess type="constant">
+		<constant_val>0.5</constant_val>
+	</initial_guess>
+	<num_processors_per_ofv>1</num_processors_per_ofv>
+<!--	<output type="volume">
+		<file_name>heavi3res</file_name>
+		<file_format>vtk</file_format>
+	</output>-->
+</topologies>
+<chain tag="opt1">
+  <optimizer type="mma" tag="mma1"/>
+  <optimizer type="continuation" tag="rep2"/>
+  <optimizer type="mma" tag="mma1"/>
+  <optimizer type="continuation" tag="rep3"/>
+  <optimizer type="mma" tag="mma1"/>
+</chain>
+<!-- Representations-->
+<heaviside3d tag="rep1" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimensions>1.<d/>0.2<d/>1.</dimensions>
+  <discretization_size>20<d/>4<d/>20</discretization_size>
+  <mesh_element_type>hex</mesh_element_type>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <filter_radius>0.11</filter_radius>
+  <heaviside_beta>0.1</heaviside_beta>
+  <threshold>0.5</threshold>
+</heaviside3d>
+<continuation tag="rep2" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimensions>1.<d/>0.2<d/>1.</dimensions>
+  <discretization_size>20<d/>4<d/>20</discretization_size>
+  <mesh_element_type>hex</mesh_element_type>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <filter_radius>0.11</filter_radius>
+  <heaviside_beta>1.</heaviside_beta>
+  <threshold>0.5</threshold>
+</continuation>
+<continuation tag="rep3" xmlns="http://tempuri.org/XMLSchema.xsd">
+	<dimensions>1.<d/>0.2<d/>1.</dimensions>
+  <discretization_size>20<d/>4<d/>20</discretization_size>
+  <mesh_element_type>hex</mesh_element_type>
+  <minimum_density>1.e-3</minimum_density>
+  <penalty_power>3.</penalty_power>
+  <filter_radius>0.11</filter_radius>
+  <heaviside_beta>3.</heaviside_beta>
+  <threshold>0.5</threshold>
+</continuation>
+<!-- Optimizer definition-->
+<mma tag="mma1">
+  <stop_tol>0.01</stop_tol>
+  <max_iterations>30</max_iterations>
+</mma>

@@ -1,0 +1,13 @@
+<optimizer type="ga" tag="opt1"/>
+<ga tag="opt1">
+  <num_generations>200</num_generations>
+  <population_size>30</population_size>
+  <crossover_rate>0.8</crossover_rate>
+  <mutation_rate>0.1</mutation_rate>
+  <mutation_range>0.1</mutation_range>
+  <num_tourn>2</num_tourn>
+  <num_elitism>1</num_elitism>
+  <mutation_radius>0</mutation_radius>
+  <constraint_penalty>1.e5</constraint_penalty>
+  <penalty_power>2.</penalty_power>
+</ga>
