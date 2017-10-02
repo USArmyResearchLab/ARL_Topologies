@@ -171,6 +171,9 @@ TEST_CASE("Testing creation of VoxelRep class","[VoxelRep]")
 	copyVox.getMPIRep(discreteVars, realVars);
 	copyVox.setMPIRep(discreteVars, realVars);
 	testOneVoxelRepInit(copyVox, 0.123, true);
+	// Test move ctor
+	VoxelRep<> moveVox(std::move(copyVox));
+	testOneVoxelRepInit(moveVox, 0.123, true);
 }
 
 TEST_CASE("Testing creation of Heaviside3D class","[Heaviside3D]")
@@ -198,5 +201,8 @@ TEST_CASE("Testing creation of Heaviside3D class","[Heaviside3D]")
 	// Test refine
 	copyHeavi.refine();
 	testOneHeaviRepInit(copyHeavi, 0.123, true);
+	// Test move ctor
+	VoxelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> moveHeavi(std::move(copyHeavi));
+	testOneHeaviRepInit(moveHeavi, 0.123, true);
 }
 

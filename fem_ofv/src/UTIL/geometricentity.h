@@ -35,7 +35,7 @@ class GeometricEntity
 {
 public:
 	//! Constructor taking the dimension of the geometry and space
-	GeometricEntity(unsigned ngd, unsigned nsd) : geomDim(ngd), spatDim(spatDim) {}
+	GeometricEntity(unsigned ngd, unsigned nsd) : geomDim(ngd), spatDim(nsd) {}
 	//! Returns whether or not the argument is conincident with this GeometricEntity (2d)
 	bool isPointCoincident(const Topologies::Point_2_base& testP) const {return isPointCoincident(testP, 1e-15);}
 	//! Returns whether or not the argument is conincident with this GeometricEntity (3d)

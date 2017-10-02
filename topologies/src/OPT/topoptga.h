@@ -77,7 +77,6 @@ private:
 	unsigned popSize, numGens, ntourn, numElite;
 	unsigned maxMutRad, curMutRad;
 	mutable std::unique_ptr<TopOptRep> torTemplate;
-	unsigned dimension;
 	std::vector<std::size_t> chromoSizes;
 	// Pareto stuff
 	unsigned numGoals;
@@ -109,7 +108,6 @@ TopOptRealGA::TopOptRealGA(const TopOptRealGA& copy) :
 	maxMutRad(copy.maxMutRad),
 	curMutRad(copy.curMutRad),
 	torTemplate(copy.torTemplate->clone()),
-	dimension(copy.dimension),
 	chromoSizes(copy.chromoSizes),
 	numGoals(copy.numGoals),
 	goalWeights(copy.goalWeights),
@@ -143,7 +141,6 @@ void TopOptRealGA::swap(TopOptRealGA& arg)
 	std::swap(maxMutRad, arg.maxMutRad);
 	std::swap(curMutRad, arg.curMutRad);
 	torTemplate.swap(arg.torTemplate);
-	std::swap(dimension, arg.dimension);
 	chromoSizes.swap(arg.chromoSizes);
 	std::swap(numGoals, arg.numGoals);
   std::swap(goalWeights, arg.goalWeights);

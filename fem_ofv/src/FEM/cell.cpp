@@ -17,7 +17,8 @@
 
 #include "cell.h"
 
-Cell::Cell(const Topologies::GenericMaterial& inMat) :
+Cell::Cell(CellType inCellType, const Topologies::GenericMaterial& inMat) :
+	itsCellType(inCellType),
 	itsMaterial(inMat)
 {
 }

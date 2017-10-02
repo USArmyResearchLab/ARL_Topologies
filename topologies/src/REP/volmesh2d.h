@@ -52,9 +52,11 @@ public:
     const std::vector<double>& inProjParams);
 	VolMesh2D(TORType inTORT, const InputLoader::TORGenericMesh& inputParams, const std::vector<double>& inPenalParams, 
 		const std::vector<double>& inProjParams);
-	VolMesh2D(TORType inTORT, const std::vector<std::vector<int> >& discreteParams, 
+	VolMesh2D(TORType inTORT, const std::vector<std::vector<int>>& discreteParams, 
 		const std::vector<std::vector<double> >& realParams);
 	virtual ~VolMesh2D();
+	VolMesh2D(const VolMesh2D& copy);
+	VolMesh2D(VolMesh2D&& copy) : VolMesh<PenaltyFunc, ProjectionFunc>(copy.myTORT) {swap(copy);}
 	VolMesh2D& operator=(VolMesh2D rhs) {swap(rhs); return *this;}
 	void swap(VolMesh2D& arg2);
 	virtual std::unique_ptr<TopOptRep> clone() const;
@@ -98,6 +100,13 @@ private:
 	virtual std::unique_ptr<TOMesh> get3DSurfaceMesh() const {return nullptr;}
 	virtual std::unique_ptr<TOMesh> get3DVolumeMesh() const {return nullptr;}
 };
+
+template <typename PenaltyFunc, typename ProjectionFunc>
+VolMesh2D<PenaltyFunc, ProjectionFunc>::VolMesh2D(const VolMesh2D<PenaltyFunc, ProjectionFunc>& copy) :
+	VolMesh<PenaltyFunc, ProjectionFunc>(copy),
+	boundaryVV(copy.boundaryVV)
+{
+}
 
 template <typename PenaltyFunc, typename ProjectionFunc>
 void VolMesh2D<PenaltyFunc, ProjectionFunc>::swap(VolMesh2D<PenaltyFunc, ProjectionFunc>& arg2)

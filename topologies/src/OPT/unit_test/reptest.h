@@ -32,7 +32,8 @@ class TestRep : public TopOptRep
 public:
 	TestRep() : TopOptRep(tortPixel), optValx(0.), optValy(0.) {}
 	TestRep(const std::vector<std::vector<int> >& discreteParams, const std::vector<std::vector<double> >& realParams) : 
-		TopOptRep(tortPixel) {}
+		TopOptRep(tortPixel), optValx(realParams[0][0]), optValy(realParams[0][1]) 
+			{assert(!realParams.empty()); assert(realParams[0].size() >= 2);}
 	virtual ~TestRep() {}
 	virtual std::unique_ptr<TopOptRep> clone() const {return std::unique_ptr<TopOptRep>(new TestRep(*this));}
 

@@ -53,6 +53,8 @@ public:
 	VolMesh3D(TORType inTORT, const std::vector<std::vector<int> >& discreteParams, 
 			const std::vector<std::vector<double> >& realParams);
 	virtual ~VolMesh3D();
+	VolMesh3D(const VolMesh3D& copy);
+	VolMesh3D(VolMesh3D&& copy) : VolMesh<PenaltyFunc, ProjectionFunc>(copy.myTORT) {swap(copy);}
 	VolMesh3D& operator=(VolMesh3D rhs) {swap(rhs); return *this;}
 	void swap(VolMesh3D& arg2);
 	virtual std::unique_ptr<TopOptRep> clone() const;
@@ -98,6 +100,12 @@ protected:
 	std::vector<double> getNodalDensities() const;
 
 };
+
+template <typename PenaltyFunc, typename ProjectionFunc>
+VolMesh3D<PenaltyFunc, ProjectionFunc>::VolMesh3D(const VolMesh3D<PenaltyFunc, ProjectionFunc>& copy) :
+	VolMesh<PenaltyFunc, ProjectionFunc>(copy)
+{
+}
 
 template <typename PenaltyFunc, typename ProjectionFunc>
 void VolMesh3D<PenaltyFunc, ProjectionFunc>::swap(VolMesh3D<PenaltyFunc, ProjectionFunc>& arg2)

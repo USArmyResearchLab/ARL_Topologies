@@ -95,7 +95,7 @@ extern "C" void destroy(Topologies::TopOptObjFun* p)
 class FEMInputLoader : public Topologies::InputLoader::InputParser
 {
 public:
-	FEMInputLoader() {}
+	FEMInputLoader() : dim(2), rho(1.), E(1.), nu(0.25), maxDisplacement(1e16), volfrac(0.5), inputMFF(Topologies::mffUnknown) {}
 	virtual ~FEMInputLoader() {}
 	virtual void parse(const pugi::xml_document& xmldoc);
 	virtual void parse(const pugi::xml_node& rootNode);
@@ -131,7 +131,7 @@ private:
 	unsigned dim;
 	double rho, E, nu, maxDisplacement;
 	double volfrac;
-	Topologies::MeshFileFormat inputMFF = Topologies::mffUnknown;
+	Topologies::MeshFileFormat inputMFF;
 	std::string meshFilename;
 	std::vector<BoundaryCondition> bcVec;
 	std::vector<std::vector<LoadCondition<double>>> lcVV;

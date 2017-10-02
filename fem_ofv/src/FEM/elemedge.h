@@ -40,9 +40,7 @@ public:
 	ElemEdge();
 	//! Constructor sets the two defining nodes of the ElemEdge
 	ElemEdge(T* pInNode1, T* pInNode2);
-	ElemEdge<T>& operator=(ElemEdge<T> rhs);
 	void swap(ElemEdge<T>& edge2);
-	~ElemEdge();
 
 	//! Equality Test, edges with any permutation of nodes are considered equal
 	bool operator==(const ElemEdge<T>& rhs) const;

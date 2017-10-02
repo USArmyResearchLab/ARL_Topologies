@@ -19,8 +19,8 @@
 #include "linquad.h"
 #include "lintetra.h"
 
-Hexahedron::Hexahedron(const std::vector<Point3D*>& inNodeVec, const Topologies::GenericMaterial& inMat):
-	Cell(inMat)
+Hexahedron::Hexahedron(CellType inCellType, const std::vector<Point3D*>& inNodeVec, const Topologies::GenericMaterial& inMat):
+	Cell(inCellType, inMat)
 {
 	assert(inNodeVec.size() == 8);
 	nodeVec = inNodeVec;

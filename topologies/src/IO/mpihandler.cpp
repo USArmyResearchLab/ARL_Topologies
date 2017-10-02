@@ -41,7 +41,8 @@
 
 namespace Topologies{
 #ifdef USE_MPI
-MPIHandler::MPIHandler(int argc, char* argv[], unsigned inNumProcsPerEval) :
+MPIHandler::MPIHandler(int argc, char* argv[], unsigned inNumProcsPerEval) :	
+	myTOOF(nullptr),
 	numProcsPerEval(inNumProcsPerEval),
 	shouldFinalize(true), // This object initializes MPI, so it should finalize it
 	debugPrint(false),
@@ -692,8 +693,10 @@ bool MPIHandler::isEvalSingleThreaded(unsigned flag) const
 // These exist to reduce the occurance of ifdef USE_MPI throughout the code
 // Some functions do nothing, but some implement serial versions of the above.
 MPIHandler::MPIHandler(int argc, char* argv[], unsigned inNumProcsPerEval) :
+	myTOOF(nullptr),
   numProcsPerEval(inNumProcsPerEval),
   debugPrint(false),
+	shouldFinalize(true),
   mpiSize(1),
   globalRank(0)
 {

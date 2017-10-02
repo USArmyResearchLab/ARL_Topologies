@@ -93,7 +93,7 @@ namespace Topologies{
 //! A struct for use in CGAL's mesher.  This allows placing more information in each mesh face.
 struct FaceInfo2
 {
-  FaceInfo2(){}
+  FaceInfo2() : nesting_level(0), optVal(0.) {}
   int nesting_level;
   GenericMaterial triMat;
   double optVal;

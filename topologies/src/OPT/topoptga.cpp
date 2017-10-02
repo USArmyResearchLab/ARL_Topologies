@@ -39,6 +39,7 @@ TopOptRealGA::TopOptRealGA(const InputLoader::TOOGA& inputData, TopOptObjFun* in
 	mutationRange(inputData.getMutationRange()),
 	crossRate(inputData.getCrossoverRate()),
 	mutationRate(inputData.getMutationRate()),
+	useDiscreteGA(false), // Consider making useDiscreteGA an input option, though needs further testing
 	popSize(inputData.getPopSize()),
 	numGens(inputData.getNumGens()),
 	numGoals(inputData.getIsPareto() ? inputData.getNumGoals() : 1),
@@ -48,7 +49,12 @@ TopOptRealGA::TopOptRealGA(const InputLoader::TOOGA& inputData, TopOptObjFun* in
 	torTemplate(nullptr),
 	maxMutRad(inputData.getMutationRadius()),
 	curMutRad(inputData.getMutationRadius()),
-	numElite(inputData.getNumElite())
+	numElite(inputData.getNumElite()),
+	popAvg(0.),
+	popBest(1e30),
+	bestEver(1e30),
+	popStdDev(0.),
+	numValid(0)
 {
 }
 
@@ -87,11 +93,8 @@ void TopOptRealGA::initializePopulation(TopOptRep& initialGuess)
 
 std::unique_ptr<TopOptRep> TopOptRealGA::optimize(const TopOptRep& initialGuess)
 {
-	// Consider making useDiscreteGA an input option, though needs further testing
 	torTemplate = initialGuess.clone();
-	useDiscreteGA = false;
 	initialGuess.getDataSize(chromoSizes);
-	dimension = initialGuess.getDimension();
 	initializePopulation(*torTemplate);
 	std::ofstream statFile("stat.txt");
 	std::cout << "Starting GA: " << std::endl;

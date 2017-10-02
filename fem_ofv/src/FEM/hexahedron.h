@@ -40,7 +40,7 @@ public:
 	 *  it is desirable to not have a standard node order enforced outside of the Hexahedron class, so the node order
 	 *  processing must be improved.  
 	 */
-	Hexahedron(const std::vector<Point3D*>& inPtVec, const Topologies::GenericMaterial& inMat);
+	Hexahedron(CellType inCellType, const std::vector<Point3D*>& inPtVec, const Topologies::GenericMaterial& inMat);
 	virtual ~Hexahedron();
 
 	//! @name Data access

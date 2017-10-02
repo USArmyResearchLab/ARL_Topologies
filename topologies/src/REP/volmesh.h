@@ -42,7 +42,7 @@ template <typename PenaltyFunc = HelperNS::powPenalMin, typename ProjectionFunc 
 class VolMesh : public TopOptRep
 {
 public:
-	explicit VolMesh(TORType inTORT) : TopOptRep(inTORT) {}
+	explicit VolMesh(TORType inTORT) : TopOptRep(inTORT), threshold(0.), filtRad(0.) {}
 	VolMesh(TORType inTORT, const InputLoader::TORGenericVolume& inputParams, const std::vector<double>& inPenalParams,
     const std::vector<double>& inProjParams);
 	VolMesh(TORType inTORT, const InputLoader::TORGenericMesh& inputParams, const std::vector<double>& inPenalParams, 

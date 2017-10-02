@@ -1,0 +1,13 @@
+cmake -DCGAL_DIR:PATH=path/to/CGAL \
+-DCMAKE_CXX_COMPILER=CC \
+-DCMAKE_C_COMPILER=cc \
+-DCATCH_ROOT:PATH=/path/to/Catch \
+-DNLOPT_ROOT:PATH=/path/to/nlopt/install/ \
+-DPUGIXML_ROOT:PATH=/path/to/pugixml \
+-DEIGEN_ROOT:PATH=/path/to/eigen \
+-DCGAL_CXX_FLAGS:STRING='-O3 -fPIC -fp-model strict -DMPICH_IGNORE_CXX_SEEK -dynamic -std=c++11 -Wall' \
+-DCMAKE_INSTALL_PREFIX:STRING='/path/to/installation' \
+-DCMAKE_BUILD_TYPE=Release \
+-DDEFINE_USE_MPI=TRUE \
+-DCOMPILE_TESTS=TRUE \
+..

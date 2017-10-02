@@ -165,6 +165,9 @@ TEST_CASE("Testing creation of PixelRep class","[PixelRep]")
 	copyPix.getMPIRep(discreteVars, realVars);
 	copyPix.setMPIRep(discreteVars, realVars);
 	testOnePixelRepInit(copyPix, 0.123, true);
+	// Test move ctor
+	PixelRep<> movePix(std::move(copyPix));
+	testOnePixelRepInit(movePix, 0.123, true);
 }
 
 TEST_CASE("Testing creation of Heaviside2D class","[Heaviside2D]")
@@ -192,5 +195,8 @@ TEST_CASE("Testing creation of Heaviside2D class","[Heaviside2D]")
 	// Test refine
 	copyHeavi.refine();
 	testOneHeaviRepInit(copyHeavi, 0.123, true);
+	// Test move ctor
+	PixelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> moveHeavi(std::move(copyHeavi));
+	testOneHeaviRepInit(moveHeavi, 0.123, true);
 }
 

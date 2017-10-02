@@ -41,14 +41,14 @@ class GenericMaterial;
 */
 struct ExoBC
 {
-  ExoBC() : dim(2), zsup(false) {}
-	ExoBC(unsigned inDim) : dim(inDim) {}
+	ExoBC() : dim(2), isSupport(false), xsup(false), ysup(false), zsup(false), nodeSetID(0) {}
+	ExoBC(unsigned inDim) : dim(inDim), isSupport(false), xsup(false), ysup(false), zsup(false), nodeSetID(0) {}
 	unsigned dim;
-  bool isSupport;
-  bool xsup, ysup, zsup;
-  Topologies::Point_3_base loadVec;
-  unsigned nodeSetID;
-  std::vector<std::size_t> nodeIDVec;
+	bool isSupport;
+	bool xsup, ysup, zsup;
+	Topologies::Point_3_base loadVec;
+	unsigned nodeSetID;
+	std::vector<std::size_t> nodeIDVec;
 };
 
 //! A class that sets up and solves a static, linear elastic finite element problem

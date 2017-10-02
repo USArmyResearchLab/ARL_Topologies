@@ -174,6 +174,9 @@ TEST_CASE("Testing creation of VolMesh2D class","[VolMesh2D]")
 	copyVM2D.getMPIRep(discreteVars, realVars);
 	copyVM2D.setMPIRep(discreteVars, realVars);
 	testOneVM2DInit(copyVM2D, 0.123);
+	// Test move ctor
+	VolMesh2D<> moveVM2D(std::move(copyVM2D));
+	testOneVM2DInit(moveVM2D, 0.123);
 }
 
 TEST_CASE("Testing creation of HeavisideMesh2D","[Heaviside2D]")
@@ -203,6 +206,10 @@ TEST_CASE("Testing creation of HeavisideMesh2D","[Heaviside2D]")
 	VolMesh2D<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> copyHeavi(testHeavi);
 	INFO("Copy ctor");
 	testOneHeaviRepInit(copyHeavi, 0.123);
+	// Test move ctor
+	VolMesh2D<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> moveHeavi(std::move(copyHeavi));
+	INFO("Move ctor");
+	testOneHeaviRepInit(moveHeavi, 0.123);
 }
 
 void testDiff(TopOptRep& testTOR)

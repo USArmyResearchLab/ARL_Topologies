@@ -26,9 +26,8 @@ double TriLinHex::xi3Gauss1[8] = {-sqrt(1./3), -sqrt(1./3), -sqrt(1./3), -sqrt(1
 double TriLinHex::wGauss1[8] = {1., 1., 1., 1., 1., 1., 1., 1.};
 
 TriLinHex::TriLinHex(const std::vector<Point3D*>& inPtVec, const Topologies::GenericMaterial& inMaterial):
-	Hexahedron(inPtVec, inMaterial)
+	Hexahedron(ctTriLinHex, inPtVec, inMaterial)
 {
-	itsCellType = ctTriLinHex;
 }
 
 void TriLinHex::switchXi2Xi3()

@@ -40,18 +40,6 @@ ElemEdge<T>::ElemEdge(T* pInNode0, T* pInNode1):
 }
 
 template <typename T>
-ElemEdge<T>::~ElemEdge()
-{
-}
-
-template <typename T>
-ElemEdge<T>& ElemEdge<T>::operator=(ElemEdge<T> rhs)
-{
-	swap(rhs);
-	return *this;
-}
-
-template <typename T>
 bool ElemEdge<T>::operator==(const ElemEdge<T>& rhs) const
 {
 	bool temp1 = (pNode0 == rhs.pNode0) && (pNode1 == rhs.pNode1);

@@ -115,9 +115,9 @@ namespace InputLoader
 		const std::vector<double>&  getGoalWeights() const {return goalWeights;}
 	private:
 		const bool isPareto;
-		double constraintPenalty = 0., penaltyPower = 1., mutationRange;
-		double crossRate, mutationRate;
-		unsigned popSize, numGens, ntourn = 2, numElite = 1, mutationRadius = 1;
+		double constraintPenalty = 0., penaltyPower = 1., mutationRange = 1.;
+		double crossRate = 1., mutationRate = 0.;
+		unsigned popSize = 2, numGens = 1, ntourn = 2, numElite = 1, mutationRadius = 1;
 		unsigned numGoals = 1;
 		double sharingRadius = 0.1;
 		std::vector<double> goalWeights;

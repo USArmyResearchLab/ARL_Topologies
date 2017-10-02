@@ -82,7 +82,6 @@ private:
 // Data
 	mutable CGAL::Point_set_2<Mesh_K> pointSet;
 	std::vector<Point_2_base> ptVec;
-	std::vector<double> areaVec;
 	std::unordered_map<Point_2_base, std::size_t, Point_2_hash> ptIDMap;
 	// Pixel based filter
 	std::vector<unsigned> sizes;

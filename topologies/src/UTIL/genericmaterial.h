@@ -46,9 +46,7 @@ public:
 	GenericMaterial(std::vector<Real> inMat, const GenericMaterial& inMatLims);
 	//! Constructor taking a vector representing a set of material properties, as well as minimum and maximum values for those properties (copied from inMatLims) and an RGB triplet
 	GenericMaterial(std::vector<Real> inMat, const GenericMaterial& inMatLims, std::vector<Real> rgb);
-	GenericMaterial(const GenericMaterial& inEl);
 	void swap(GenericMaterial& arg2);
-	~GenericMaterial();
 
 	//! Equality test, this tests only the material properties, not color or limits
 	bool operator==(const GenericMaterial& inMat) const;

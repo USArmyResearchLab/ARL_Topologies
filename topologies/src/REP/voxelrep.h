@@ -44,6 +44,8 @@ public:
 	VoxelRep(TORType inTORT, const std::vector<std::vector<int> >& discreteParams, 
 			const std::vector<std::vector<double>>& realParams);
 	virtual ~VoxelRep();
+	VoxelRep(const VoxelRep& copy);
+	VoxelRep(VoxelRep&& copy) : VolMesh3D<PenaltyFunc, ProjectionFunc>(copy.myTORT) {swap(copy);}
 	VoxelRep& operator=(VoxelRep rhs){swap(rhs); return *this;}
 	void swap(VoxelRep& arg2);
 	virtual std::unique_ptr<TopOptRep> clone() const;
@@ -79,6 +81,19 @@ private:
 	unsigned nx, ny, nz;
 	MeshElementType myMET;
 };
+
+template <typename PenaltyFunc, typename ProjectionFunc>
+VoxelRep<PenaltyFunc, ProjectionFunc>::VoxelRep(const VoxelRep<PenaltyFunc, ProjectionFunc>& copy) :
+	VolMesh3D<PenaltyFunc, ProjectionFunc>(copy),
+	nx(copy.nx),
+  ny(copy.ny),
+  nz(copy.nz),
+  width(copy.width),
+  length(copy.length),
+  height(copy.height),
+  myMET(copy.myMET)
+{
+}
 
 template <typename PenaltyFunc, typename ProjectionFunc>
 void VoxelRep<PenaltyFunc, ProjectionFunc>::swap(VoxelRep<PenaltyFunc, ProjectionFunc>& arg2)

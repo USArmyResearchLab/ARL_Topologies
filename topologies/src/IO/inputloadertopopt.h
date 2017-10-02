@@ -57,10 +57,10 @@ namespace InputLoader
 		void setOutputType(const pugi::xml_node& rootNode);
 		void setOutputFileFormat(const pugi::xml_node& rootNode);
 
-		OutputType type;
+		OutputType type = otUnknown;
 		std::string fileName;
-		OutputFileFormat fileFormat;
-		double extrusionLength;
+		OutputFileFormat fileFormat = offDefault;
+		double extrusionLength = 1.;
 		unsigned outputPeriod = 1;
 		bool overwrite = true, outputAtFin = true, outputStep = false;
 	};

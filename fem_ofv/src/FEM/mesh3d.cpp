@@ -26,10 +26,11 @@
 #include "trilinhex.h"
 #include "tomesh.h"
 
-Mesh3D::Mesh3D(const Topologies::TOMesh* const inMesh, const Topologies::GenericMaterial& baseMat)
+Mesh3D::Mesh3D(const Topologies::TOMesh* const inMesh, const Topologies::GenericMaterial& baseMat) :
+	itsNumNodes(inMesh->getNumNodes()),
+	itsNumCells(inMesh->getNumElements()),
+	itsOffset(0)
 {
-	itsNumNodes = inMesh->getNumNodes();
-	itsNumCells = inMesh->getNumElements();
 	nodeVec.reserve(itsNumNodes);
 	cellVec.reserve(itsNumCells);
 	// Generate list of all grid points
@@ -133,7 +134,6 @@ void Mesh3D::swap(Mesh3D& arg2)
 	std::swap(itsNumNodes, arg2.itsNumNodes);
 	std::swap(itsFaceNunk, arg2.itsFaceNunk);
 	std::swap(itsInternalNunk, arg2.itsInternalNunk);
-	std::swap(typeOfCell, arg2.typeOfCell);
 	std::swap(itsNumInternalPatches, arg2.itsNumInternalPatches);
 	std::swap(itsNumBoundaryPatches, arg2.itsNumBoundaryPatches);
 	std::swap(itsNunk, arg2.itsNunk);

@@ -47,7 +47,7 @@ class Cell
 {
 public:
 	//! Constructor that takes a GenericMaterial
-	Cell(const Topologies::GenericMaterial& inMat);
+	Cell(CellType inCellType, const Topologies::GenericMaterial& inMat);
 	virtual ~Cell() {};
 
 	//! @name Data access

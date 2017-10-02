@@ -18,13 +18,12 @@
 #include "lintetra.h"
 
 LinTetra::LinTetra(const std::vector<Point3D*>& inPtVec, const Topologies::GenericMaterial& inMaterial):
-Tetrahedron(inPtVec, inMaterial),
+Tetrahedron(ctLinTetra, inPtVec, inMaterial),
 	r(*inPtVec[0]),
 	rXi1(*inPtVec[1] - *inPtVec[0]),
 	rXi2(*inPtVec[2] - *inPtVec[0]),
 	rXi3(*inPtVec[3] - *inPtVec[0])
 {
-	itsCellType = ctLinTetra;
 }
 
 void LinTetra::switchXi2Xi3()

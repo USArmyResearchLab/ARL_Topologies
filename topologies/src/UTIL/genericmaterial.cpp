@@ -68,24 +68,12 @@ GenericMaterial::GenericMaterial(std::vector<Real> inMat, const GenericMaterial&
 {
 }
 
-GenericMaterial::GenericMaterial(const GenericMaterial& inEl):
-	constitutiveParams(inEl.constitutiveParams),
-	paramMin(inEl.paramMin),
-	paramMax(inEl.paramMax),
-	rgbPrintColor(inEl.rgbPrintColor)
-{
-}
-
 void GenericMaterial::swap(GenericMaterial& arg2)
 {
 	constitutiveParams.swap(arg2.constitutiveParams);
 	paramMin.swap(arg2.paramMin);
 	paramMax.swap(arg2.paramMax);
 	rgbPrintColor.swap(arg2.rgbPrintColor);
-}
-
-GenericMaterial::~GenericMaterial()
-{
 }
 
 bool GenericMaterial::operator==(const GenericMaterial& inel) const

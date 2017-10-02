@@ -31,11 +31,13 @@ Real CSGNode::boundMag = 1, CSGNode::boundSnap = 0.1, CSGNode::prioritymax = 10.
 bool CSGNode::useBoundSnap = false;
 
 CSGNode::CSGNode(int curTreeDepth):
+	parent(nullptr),
 	depthInTree(curTreeDepth + 1)
 {
 }
 
 CSGNode::CSGNode(const CSGNode& copy) :
+	parent(nullptr),
 	depthInTree(copy.depthInTree)
 {
 }

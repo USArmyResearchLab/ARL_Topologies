@@ -19,12 +19,19 @@ find_package(CGAL QUIET COMPONENTS Core )
 
 if ( CGAL_FOUND )
 # Definitions
-if(DEFINE_USE_MPI)
-	add_definitions(-DUSE_MPI)
-endif(DEFINE_USE_MPI)
+	if(DEFINE_USE_MPI)
+		add_definitions(-DUSE_MPI)
+	endif(DEFINE_USE_MPI)
+	if(NOT DEFINED TOPOLOGIES_ROOT)
+		set(TOPOLOGIES_SRC ${CMAKE_CURRENT_SOURCE_DIR}/../../topologies/src)
+		set(TOPOLOGIESCORE_LIB ${CMAKE_CURRENT_BINARY_DIR}/../../topologies/src/libtopologiescore.so)
+	else(NOT DEFINED TOPOLOGIES_ROOT)
+		# Note that if TOPOLOGIES_ROOT is defined, it is assumed that libtopologiescore.so is in that directory:
+		# This is so that the fem_ofv compilation can be separated from topologies, if desired
+		set(TOPOLOGIES_SRC ${TOPOLOGIES_ROOT}/topologies/src)
+		set(TOPOLOGIESCORE_LIB ${TOPOLOGIES_ROOT}/lib/libtopologiescore.so)
+	endif(NOT DEFINED TOPOLOGIES_ROOT)
 # Library locations
-	set(TOPOLOGIES_SRC ${TOPOLOGIES_ROOT}/src)
-	set(TOPOLOGIESCORE_LIB ${TOPOLOGIES_ROOT}/lib/libtopologiescore.so)
 	set(NLOPT_LIB_DIR ${NLOPT_ROOT}/lib )
 	set(NLOPT_LIB ${NLOPT_LIB_DIR}/libnlopt.so)
 	set(CATCH_INC_DIR ${CATCH_ROOT}/single_include)
@@ -32,7 +39,7 @@ endif(DEFINE_USE_MPI)
 	set (PUGIXML_LIB_DIR ${PUGIXML_ROOT}/lib64)
 # Set include directories
 	include( ${CGAL_USE_FILE} )
-	include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+	include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 	include_directories (BEFORE ${TOPOLOGIES_SRC})
 	include_directories (BEFORE ${TOPOLOGIES_SRC}/IO)
 	include_directories (BEFORE ${TOPOLOGIES_SRC}/OBJFUN)

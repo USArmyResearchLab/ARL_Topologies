@@ -1,4 +1,4 @@
-# ARL_Topologies
+# ARL_Topologies ![CC0](https://img.shields.io/badge/license-CC0-blue.svg)
 
 ARL_Topologies is an extensible topology optimization program meant to be both a research platform and usable in general.  To achieve this, it separates concepts from topology optimization into three parts: Representation, optimizer, and objective function.  
 
@@ -20,9 +20,8 @@ In addition, post-processing to STL is available for density-based representatio
 
 ## Prerequisites
 
-The following libraries are required to compile ARL_Topologies:
+To compile ARL_Topologies, a C++11 compatible compiler is required along with the following libraries:
 
-* A C++11 compatible compiler
 * [CGAL, version 4.6 or later](http://cgal.org)
   * [Boost, version 1.59 or later](http://www.boost.org/)
   * [GMP, version 6 or later](https://gmplib.org/)
@@ -44,17 +43,15 @@ The following libraries are required to compile ARL_Topologies:
 	1. Create a build directory
 	2. Edit the file `cmake_script_config`
 		1. Change the paths to point toward the required libraries
-		2. Change the last argument to point towards the `src` directory of ARL_Topologies
+		2. Change the last argument to point towards the top level directory of ARL_Topologies
 		3. Edit the compilers if necessary
 		4. Edit the installation path
 		5. By default, ARL_Topologies compiles against MPI, this can be removed by deleting `-DUSE_MPI` from the configuration command
 	3. Run `cmake_script_config` in the build directory
 	4. Run `make`
 	5. Run `make install`
-3. Build the FEM objective function shared library
-	1. Follow the same steps as above, but in the objective function directory
-	2. It is recommended that the same installation path is used for the FEM library and ARL_Topologies
-	3. Run `make test` to execute the unit tests
+3. By default, both Topologies main code and the FEM objective function will be built
+	* Note that `fem_ofv` may be moved and compiled separately, though in this case the CMake variable `TOPOLOGIES_ROOT` must be set to the directory containing the topologies installation and source files
 4. Test the installation
 	1. After installing the FEM library, if desired, run `make test` in the ARL_Topologies build directory
 	* Note that all tests may take up to 5 minutes to complete

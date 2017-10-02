@@ -28,6 +28,7 @@
 #include "REP/tomesh.h"
 
 FEMProblem::FEMProblem(const Topologies::TOMesh* const inMesh, const Topologies::GenericMaterial& baseMat) :
+	numFreeDOFs(0),
 	invalid(false)
 {
 	assert(inMesh);

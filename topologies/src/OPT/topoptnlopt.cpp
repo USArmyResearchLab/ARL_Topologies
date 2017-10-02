@@ -63,6 +63,7 @@ namespace
 TopOptNLOpt::TopOptNLOpt(TOOType inTOOT, const InputLoader::TOOGeneric& inputData, TopOptObjFun* inpObjFun, const std::vector<OutputHandler*>& inOutVec, MPIHandler* inMPIH):
 	TopOpt(inpObjFun, inOutVec, inMPIH),
 	myTOOT(inTOOT),
+	curiter(0),
 	filterSize(inputData.getFilterSize()), 
 	stopTol(inputData.getStopTol()),
 	maxIters(inputData.getMaxIters()),

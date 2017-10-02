@@ -183,6 +183,9 @@ TEST_CASE("Testing creation of VolMesh3D class","[VolMesh3D]")
 	copyVM3D.getMPIRep(discreteVars, realVars);
 	copyVM3D.setMPIRep(discreteVars, realVars);
 	testOneVM3DInit(copyVM3D, 0.123);
+	// Test move ctor
+	VolMesh3D<> moveVM3D(std::move(copyVM3D));
+	testOneVM3DInit(moveVM3D, 0.123);
 }
 
 TEST_CASE("Testing creation of HeavisideMesh3D","[HeavisideMesh3D]")
@@ -212,8 +215,12 @@ TEST_CASE("Testing creation of HeavisideMesh3D","[HeavisideMesh3D]")
 	testOneHeaviRepInit(testHeavi, 0.123);
 	// Test copy ctor
 	VolMesh3D<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> copyHeavi(testHeavi);
-	INFO("Copy ctor")
+	INFO("Copy ctor");
 	testOneHeaviRepInit(copyHeavi, 0.123);
+	// Test move ctor
+	VolMesh3D<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> moveHeavi(std::move(copyHeavi));
+	INFO("Move ctor");
+	testOneHeaviRepInit(moveHeavi, 0.123);
 }
 
 void testDiff(TopOptRep& testTOR)

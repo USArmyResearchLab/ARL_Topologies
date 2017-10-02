@@ -140,7 +140,6 @@ private:
 	// Data Members
 	std::size_t itsNumCells, itsNumPatches, itsNumEdges, itsNumNodes;
 	std::size_t itsFaceNunk, itsInternalNunk;
-	unsigned typeOfCell;
 	std::size_t itsNumInternalPatches, itsNumBoundaryPatches, itsNunk, itsOffset;
 	std::vector<std::unique_ptr<Point3D>> nodeVec;
 	std::vector<std::unique_ptr<ElemEdge<Point3D>>> edgeVec;

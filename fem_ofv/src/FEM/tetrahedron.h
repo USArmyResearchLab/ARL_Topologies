@@ -40,7 +40,7 @@ public:
 	/*! In terms of normalized area coordinates, the point inPtVec[0] is the \xi_4 = 1 point, inPtVec[1] is the \xi_1 = 1 point, 
 	 *  inPtVec[2] is the \xi_2 = 1 point, and inPtVec[3] is the \xi_3 = 1 point. 
 	 */
-	Tetrahedron(const std::vector<Point3D*>& inPtVec, const Topologies::GenericMaterial& inMat);
+	Tetrahedron(CellType inCellType, const std::vector<Point3D*>& inPtVec, const Topologies::GenericMaterial& inMat);
 	virtual ~Tetrahedron();
 
 	//! @name Data access

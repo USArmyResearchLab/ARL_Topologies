@@ -17,8 +17,8 @@
 
 #include "tetrahedron.h"
 
-Tetrahedron::Tetrahedron(const std::vector<Point3D*>& inNodeVec, const Topologies::GenericMaterial& inMat):
-	Cell(inMat)
+Tetrahedron::Tetrahedron(CellType inCellType, const std::vector<Point3D*>& inNodeVec, const Topologies::GenericMaterial& inMat):
+	Cell(inCellType, inMat)
 {
 	assert(inNodeVec.size() == 4);
 	nodeVec = inNodeVec;

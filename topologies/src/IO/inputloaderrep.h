@@ -66,7 +66,7 @@ namespace InputLoader
 		std::vector<double> dimensions;
 		std::vector<unsigned> discSizes;
 		unsigned rank = 10;
-		MeshElementType myMET;
+		MeshElementType myMET = metUnknown;
 		VolMeshTORSpecification myVMTORS;
 	};
 
@@ -98,7 +98,7 @@ namespace InputLoader
 		std::string repName;
 		std::vector<double> regionDimensions;
 		std::vector<unsigned> meshSizes, shapeNums;
-		unsigned nPointsPerShape;
+		unsigned nPointsPerShape = 3;
 		double minDensity = 0.;
 		bool useAffine = false, shapesAreHoles = false;
 	};
@@ -115,7 +115,7 @@ namespace InputLoader
 		const GeometryTranslation::MesherData& getMesherData() const {return inputParams;}
 	private:
 		GeometryTranslation::MesherData inputParams;
-		unsigned dim;
+		unsigned dim = 2;
 	};
 
 	class TORGenericMesh : public InputParser
