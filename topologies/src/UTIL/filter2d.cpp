@@ -172,7 +172,8 @@ std::vector<std::map<std::size_t, double>> Filter2D<WeightFunc>::diffFilter(cons
 		getPointsInCircle(filtPts[k], rad, ptsInRange);
 		// First compute normalization
 		double normVal = 0.;
-		std::vector<double> fVec(ptsInRange.size());
+		std::vector<double> fVec(ptsInRange.size(), 0.);
+		std::vector<std::size_t> idVec(ptsInRange.size(), 0);
 		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
 		{
 			std::unordered_map<Point_2_base, std::size_t, Point_2_hash>::const_iterator mcit = ptIDMap.find(ptsInRange[k2]->point());
@@ -183,20 +184,16 @@ std::vector<std::map<std::size_t, double>> Filter2D<WeightFunc>::diffFilter(cons
 				std::size_t id = mcit->second;
 				normVal += f*areaVec[id];
 				fVec[k2] = f*areaVec[id];
-			}
-		}
-		// Compute derivative
-		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
-		{
-			std::unordered_map<Point_2_base, std::size_t, Point_2_hash>::const_iterator mcit = ptIDMap.find(ptsInRange[k2]->point());
-			if(mcit != ptIDMap.end())
-			{
-				std::size_t id = mcit->second;
-				std::map<std::size_t, double>& curRes = res[id];
-				curRes.emplace(k, fVec[k2]/normVal);
+				idVec[k2] = id;
 			}
 			else
 				std::cout << "Warning: point " << ptsInRange[k2]->point() << " not found in ptIDMap" << std::endl;
+		}
+		// Store derivative
+		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
+		{
+			std::map<std::size_t, double>& curRes = res[idVec[k2]];
+			curRes.emplace(k, fVec[k2]/normVal);
 		}
 	}
 	return res;

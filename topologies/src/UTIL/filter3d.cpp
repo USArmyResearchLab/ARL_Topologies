@@ -203,7 +203,8 @@ std::vector<std::map<std::size_t, double>> Filter3D<WeightFunc>::diffFilter(cons
 			continue;
 		// First compute normalization and weight function values
 		double normVal = 0.;
-		std::vector<double> fVec(ptsInRange.size());
+		std::vector<double> fVec(ptsInRange.size(), 0.);
+		std::vector<std::size_t> idVec(ptsInRange.size(), 0);
 		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
 		{
 			std::unordered_map<Point_3_base, std::size_t, Point_3_hash>::const_iterator mcit = ptIDMap.find(ptsInRange[k2]);
@@ -214,20 +215,16 @@ std::vector<std::map<std::size_t, double>> Filter3D<WeightFunc>::diffFilter(cons
 				std::size_t id = mcit->second;
 				normVal += f*areaVec[id];
 				fVec[k2] = f*areaVec[id];
+				idVec[k2] = id;
 			}
+			else
+				std::cout << "Warning: point " << ptsInRange[k2] << " not found in ptIDMap" << std::endl;
 		}
 		// Compute derivative
 		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
 		{
-			std::unordered_map<Point_3_base, std::size_t, Point_3_hash>::const_iterator mcit = ptIDMap.find(ptsInRange[k2]);
-			if(mcit != ptIDMap.end())
-			{
-				std::size_t id = mcit->second;
-				std::map<std::size_t, double>& curRes = res[id];
-				curRes.emplace(k, fVec[k2]/normVal);
-			}
-			else
-				std::cout << "Warning: point " << ptsInRange[k2] << " not found in ptIDMap" << std::endl;
+			std::map<std::size_t, double>& curRes = res[idVec[k2]];
+			curRes.emplace(k, fVec[k2]/normVal);
 		}
 	}
 	return res;
@@ -244,3 +241,4 @@ void Filter3D<WeightFunc>::getPointsInSphere(const Point_3_base& center, double 
 template class Filter3D<HelperNS::linearHat>;
 template class Filter3D<HelperNS::constantFunction>;
 }// namespace
+
