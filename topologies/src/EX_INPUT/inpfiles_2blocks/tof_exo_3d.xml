@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <fem xmlns="http://tempuri.org/XMLSchema.xsd">
 	<dimension>3</dimension>
-	<mesh_file>inpfiles_2blocks/test2blocks3d.txt</mesh_file>
-	<file_format>exodusii<file_format/>
+	<mesh_file>@CMAKE_INSTALL_PREFIX@/examples/inpfiles_2blocks/test2blocks3d.txt</mesh_file>
+	<file_format>exodusii</file_format>
 	<volume_fraction>0.5</volume_fraction>
 	<youngs_modulus>1.</youngs_modulus>
 	<poissons_ratio>0.25</poissons_ratio>
