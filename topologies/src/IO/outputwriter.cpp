@@ -59,8 +59,8 @@ namespace OutputWriter
 			std::ofstream outFile(fileName);
 			outFile.precision(8);
 			outFile << std::scientific;
-			std::cout << "Outputting STL, num triangles: " << inMesh.getNumElements() << std::endl;
-			outFile << "solid " << fileName << std::endl;
+			std::cout << "Outputting STL, num triangles: " << inMesh.getNumElements() << '\n';
+			outFile << "solid " << fileName << '\n';
 			for(std::size_t ke = 0; ke < inMesh.getNumElements(); ++ke)
 			{
 				const std::vector<std::size_t> curElem = inMesh.getElementConnectivity(ke);
@@ -72,9 +72,9 @@ namespace OutputWriter
 				outFile << "  vertex " << p0.x() << " " << p0.y() << " " << p0.z() << "\n";
 				outFile << "  vertex " << p1.x() << " " << p1.y() << " " << p1.z() << "\n";
 				outFile << "  vertex " << p2.x() << " " << p2.y() << " " << p2.z() << "\n";
-				outFile << " endloop\nendfacet" << std::endl;;
+				outFile << " endloop\nendfacet" << '\n';;
 			}
-			outFile << "endsolid" << std::endl;
+			outFile << "endsolid" << '\n';
 			outFile.close();
 		}
 
@@ -86,7 +86,7 @@ namespace OutputWriter
 			std::ofstream outFile(fileName);
 			outFile.precision(8);
 			outFile << std::scientific;
-			outFile << "solid " << fileName << std::endl;
+			outFile << "solid " << fileName << '\n';
 			for(Triangle_vector::iterator it = triVec.begin(); it != triVec.end(); ++it)
 			{
 				CGAL::Point_3<Mesh_K> p0 = it->vertex(0), p1 = it->vertex(1), p2 = it->vertex(2);
@@ -96,9 +96,9 @@ namespace OutputWriter
 				outFile << "  vertex " << fabs(p0.x()) << " " << fabs(p0.y()) << " " << fabs(p0.z()) << "\n";
 				outFile << "  vertex " << fabs(p1.x()) << " " << fabs(p1.y()) << " " << fabs(p1.z()) << "\n";
 				outFile << "  vertex " << fabs(p2.x()) << " " << fabs(p2.y()) << " " << fabs(p2.z()) << "\n";
-				outFile << " endloop\nendfacet" << std::endl;
+				outFile << " endloop\nendfacet" << '\n';
 			}
-			outFile << "endsolid" << std::endl;
+			outFile << "endsolid" << '\n';
 			outFile.close();
 		}
 
@@ -106,7 +106,7 @@ namespace OutputWriter
 		{
 			std::ofstream outFile(fileName, std::ios::in|std::ios::binary|std::ios::trunc);
 			assert(outFile.is_open());
-			std::cout << "Outputting STL, num triangles: " << inMesh.getNumElements() << std::endl;
+			std::cout << "Outputting STL, num triangles: " << inMesh.getNumElements() << '\n';
 			char header[80] = {0}; // 80 byte header, meaningless?
 			outFile.write(header, 80);
 			// Write number of facets
@@ -162,29 +162,29 @@ namespace OutputWriter
 			for(std::size_t k = 0; k < inMesh->getNumNodes(); ++k)
 			{
 				Mesh_K::Point_2 p0 = inMesh->getNode2D(k);
-				plotFile << std::setprecision(15) << p0.x() << " " << p0.y() << std::endl;
+				plotFile << std::setprecision(15) << p0.x() << " " << p0.y() << '\n';
 			}
-			plotFile << "];" << std::endl;
+			plotFile << "];" << '\n';
 			plotFile << "tris = [";
 			for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
 			{
 				std::vector<std::size_t> elems = inMesh->getElementConnectivity(k);
 				for(std::size_t kn = 0; kn < elems.size(); ++kn )
 					plotFile << elems[kn] + 1 << " ";
-				plotFile << std::endl;
+				plotFile << '\n';
 			}
-			plotFile << "];" << std::endl;
+			plotFile << "];" << '\n';
 			plotFile << "mats = [";
 			for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
 			{
-				plotFile << inMesh->getOptVal(k) << std::endl;
+				plotFile << inMesh->getOptVal(k) << '\n';
 			}
-			plotFile << "];" << std::endl;
-			plotFile << "figure" << std::endl;
-			plotFile << "for k = 1:length(tris)" << std::endl;
-			plotFile << "	patch(points(tris(k,:),1), points(tris(k,:),2),mats(k));" << std::endl;
-			plotFile << "end" << std::endl;
-			plotFile << "axis equal" << std::endl;
+			plotFile << "];" << '\n';
+			plotFile << "figure" << '\n';
+			plotFile << "for k = 1:length(tris)" << '\n';
+			plotFile << "	patch(points(tris(k,:),1), points(tris(k,:),2),mats(k));" << '\n';
+			plotFile << "end" << '\n';
+			plotFile << "axis equal" << '\n';
 		}
 	
 		void plotMeshMatlab3d(const TOMesh* const inMesh, std::ofstream& plotFile)
@@ -193,9 +193,9 @@ namespace OutputWriter
 			for(std::size_t k = 0; k < inMesh->getNumNodes(); ++k)
 			{
 				Mesh_K::Point_3 p0 = inMesh->getNode3D(k);
-				plotFile << std::setprecision(15) << p0.x() << " " << p0.y() << " " << p0.z() << std::endl;
+				plotFile << std::setprecision(15) << p0.x() << " " << p0.y() << " " << p0.z() << '\n';
 			}
-			plotFile << "];" << std::endl;
+			plotFile << "];" << '\n';
 			plotFile << "tets = [";
 			for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
 			{
@@ -204,20 +204,20 @@ namespace OutputWriter
 				{
 					for(std::size_t kn = 0; kn < elems.size(); ++kn )
 						plotFile << elems[kn] + 1 << " ";
-					plotFile << std::endl;
+					plotFile << '\n';
 				}
 			}
-			plotFile << "];" << std::endl;
+			plotFile << "];" << '\n';
 			plotFile << "mats = [";
 			for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
 			{
 //				if(inMesh->getOptVal(k) != 0)
-					plotFile << inMesh->getOptVal(k) << std::endl;
+					plotFile << inMesh->getOptVal(k) << '\n';
 			}
-      plotFile << "];" << std::endl;
-			plotFile << "figure;" << std::endl;
-			plotFile << "caxis([0. 1.]);" << std::endl;
-			plotFile << "tetramesh(tets, points, mats);" << std::endl;
+      plotFile << "];" << '\n';
+			plotFile << "figure;" << '\n';
+			plotFile << "caxis([0. 1.]);" << '\n';
+			plotFile << "tetramesh(tets, points, mats);" << '\n';
 		}
 
 		unsigned getVTKCellType(unsigned dim, std::size_t nnodes)
@@ -273,8 +273,8 @@ namespace OutputWriter
 	{
 		char plotColors[7] = {'r', 'b', 'g', 'm', 'c', 'y', 'k'};
 		std::ofstream outFile(fileName.c_str());
-		outFile << "figure;" << std::endl;
-		outFile << "hold on" << std::endl;
+		outFile << "figure;" << '\n';
+		outFile << "hold on" << '\n';
 		unsigned colorCount = 0, numColors = 7;
 		for(Uint k1 = 0; k1 < segVV.size(); ++k1)
 		{
@@ -282,18 +282,18 @@ namespace OutputWriter
 			for(Uint k2 = 0; k2 < segVV[k1].size(); ++k2)
 			{
 				Point_2_base p1 = segVV[k1][k2].source(), p2 = segVV[k1][k2].target();
-				outFile << std::setprecision(15) << p1.x() << " " << p1.y() << " " << p2.x() << " " << p2.y() << std::endl;
+				outFile << std::setprecision(15) << p1.x() << " " << p1.y() << " " << p2.x() << " " << p2.y() << '\n';
 			}
-			outFile << "];" << std::endl;
-			outFile << "for k = 1:size(segs" << k1 <<", 1)" << std::endl;
-			outFile << "  plot(segs" << k1 << "(k, [1 3]), segs" << k1 << "(k, [2 4]), '" << plotColors[colorCount] << "');" << std::endl;
-			outFile << "end" << std::endl;
+			outFile << "];" << '\n';
+			outFile << "for k = 1:size(segs" << k1 <<", 1)" << '\n';
+			outFile << "  plot(segs" << k1 << "(k, [1 3]), segs" << k1 << "(k, [2 4]), '" << plotColors[colorCount] << "');" << '\n';
+			outFile << "end" << '\n';
 			++colorCount;
 			if(colorCount >= numColors)
 				colorCount = 0;
 		}
-		outFile << "hold off" << std::endl;
-		outFile << "axis equal" << std::endl;
+		outFile << "hold off" << '\n';
+		outFile << "axis equal" << '\n';
 	}
 
 	void plotSegmentsMatlab(const std::vector<Mesh_Segment_2>& segVec, const std::string& fileName)
@@ -303,23 +303,23 @@ namespace OutputWriter
 	  for(Uint k = 0; k < segVec.size(); k++)
 	  {
 		Point_2_base p1 = segVec[k].source(), p2 = segVec[k].target();
-		outFile << std::setprecision(15) << p1.x() << " " << p1.y() << " " << p2.x() << " " << p2.y() << std::endl;
+		outFile << std::setprecision(15) << p1.x() << " " << p1.y() << " " << p2.x() << " " << p2.y() << '\n';
 	  }
-	  outFile << "];" << std::endl;
-	  outFile << "figure;" << std::endl;
-	  outFile << "hold on" << std::endl;
-	  outFile << "for k = 1:size(segs, 1)" << std::endl;
-	  outFile << "  plot(segs(k, [1 3]), segs(k, [2 4]))" << std::endl;
-	  outFile << "end" << std::endl;
-	  outFile << "hold off" << std::endl;
-	  outFile << "axis equal" << std::endl;
+	  outFile << "];" << '\n';
+	  outFile << "figure;" << '\n';
+	  outFile << "hold on" << '\n';
+	  outFile << "for k = 1:size(segs, 1)" << '\n';
+	  outFile << "  plot(segs(k, [1 3]), segs(k, [2 4]))" << '\n';
+	  outFile << "end" << '\n';
+	  outFile << "hold off" << '\n';
+	  outFile << "axis equal" << '\n';
 	}
 
 	void plotDataMatlab(const std::vector<double>& data, std::size_t nx, std::size_t ny, std::size_t nz, const std::string& fileName)
 	{
 		std::ofstream outFile(fileName);
 		outFile.precision(15);
-		outFile << "data = zeros(" << ny << ", " << nx << ", " << nz << ");" << std::endl;
+		outFile << "data = zeros(" << ny << ", " << nx << ", " << nz << ");" << '\n';
 		for(std::size_t kz = 0; kz < nz; ++kz)
 		{
 			outFile << "data(:,:," << kz+1 << ") = [";
@@ -330,9 +330,9 @@ namespace OutputWriter
 					std::size_t kp = kz + nz*ky + nz*ny*kx;
 					outFile << data[kp] << " ";
 				}
-				outFile << std::endl;
+				outFile << '\n';
 			}
-			outFile << "];" << std::endl;
+			outFile << "];" << '\n';
 		}
 		outFile.close();
 	}
@@ -349,9 +349,9 @@ namespace OutputWriter
 				std::size_t kp = ky + ny*kx;
 				outFile << data[kp] << " ";
 			}
-			outFile << std::endl;
+			outFile << '\n';
 		}
-		outFile << "];" << std::endl;
+		outFile << "];" << '\n';
 		outFile.close();
 	}
 
@@ -393,17 +393,17 @@ namespace OutputWriter
 	{
 		outFile.precision(8);
 		outFile << std::scientific;
-		outFile << "# vtk DataFile Version 3.1" << std::endl;
-		outFile << "Output for topologies\nASCII" << std::endl;
-		outFile << "DATASET UNSTRUCTURED_GRID" << std::endl;
-		outFile << "POINTS " << inMesh->getNumNodes() << " FLOAT" << std::endl;
+		outFile << "# vtk DataFile Version 3.1" << '\n';
+		outFile << "Output for topologies\nASCII" << '\n';
+		outFile << "DATASET UNSTRUCTURED_GRID" << '\n';
+		outFile << "POINTS " << inMesh->getNumNodes() << " FLOAT" << '\n';
 		// Output points
 		for(std::size_t k = 0; k < inMesh->getNumNodes(); ++k)
 		{
 			if(inMesh->dimNum() == 2)
-				outFile << inMesh->getNode2D(k) << " 0." << std::endl;
+				outFile << inMesh->getNode2D(k) << " 0." << '\n';
 			else
-				outFile << inMesh->getNode3D(k) << std::endl;
+				outFile << inMesh->getNode3D(k) << '\n';
 		}
 		// Output elements
 		// First count number of cell nodes
@@ -412,27 +412,27 @@ namespace OutputWriter
 			nnodes += inMesh->getElementConnectivity(k).size();
 		std::size_t ndata = nnodes + inMesh->getNumElements(); // Number of numbers
 		// Ouput cell information
-		outFile << "CELLS " << inMesh->getNumElements() << " " << ndata << std::endl;
+		outFile << "CELLS " << inMesh->getNumElements() << " " << ndata << '\n';
 		for(std::size_t ke = 0; ke < inMesh->getNumElements(); ++ke)
 		{
 			const std::vector<std::size_t>& curCell = inMesh->getElementConnectivity(ke);
 			outFile << curCell.size();
 			for(std::size_t kc = 0; kc < curCell.size(); ++kc)
 				outFile << " " << curCell[kc];
-			outFile << std::endl;
+			outFile << '\n';
 		}
 		// Output cell types, currently only tris and tets are supported
-		outFile << "CELL_TYPES " << inMesh->getNumElements() << std::endl;
+		outFile << "CELL_TYPES " << inMesh->getNumElements() << '\n';
 		for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
-			outFile << getVTKCellType(inMesh->dimNum(), inMesh->getElementConnectivity(k).size()) << std::endl;
+			outFile << getVTKCellType(inMesh->dimNum(), inMesh->getElementConnectivity(k).size()) << '\n';
 		// Output mesh data
-		outFile << "CELL_DATA " << inMesh->getNumElements() << std::endl;
+		outFile << "CELL_DATA " << inMesh->getNumElements() << '\n';
 		// Output headers
-		outFile << "SCALARS density FLOAT 1" << std::endl;
-		outFile << "LOOKUP_TABLE default" << std::endl;
+		outFile << "SCALARS density FLOAT 1" << '\n';
+		outFile << "LOOKUP_TABLE default" << '\n';
 		// Output data
 		for(std::size_t ke = 0; ke < inMesh->getNumElements(); ++ke)
-			outFile << inMesh->getOptVal(ke) << std::endl;
+			outFile << inMesh->getOptVal(ke) << '\n';
 	}
 
 	void plotMeshGMSH(const TOMesh* const inMesh, const std::string& outFileName, unsigned kt, bool writeMesh)
@@ -448,20 +448,20 @@ namespace OutputWriter
 		outFile << std::scientific;
 		if(writeMesh) // Write mesh
 		{
-			outFile << "$MeshFormat\n2.2 0 8\n$EndMeshFormat" << std::endl; // Header info
+			outFile << "$MeshFormat\n2.2 0 8\n$EndMeshFormat" << '\n'; // Header info
 			// Write nodes
-			outFile << "$Nodes\n" << inMesh->getNumNodes() << std::endl;
+			outFile << "$Nodes\n" << inMesh->getNumNodes() << '\n';
 			for(std::size_t k = 0; k < inMesh->getNumNodes(); ++k)
 			{
 				outFile << k+1 << " ";
 				if(inMesh->dimNum() == 2)
-					outFile << inMesh->getNode2D(k) << " 0." << std::endl;
+					outFile << inMesh->getNode2D(k) << " 0." << '\n';
 				else
-					outFile << inMesh->getNode3D(k) << std::endl;
+					outFile << inMesh->getNode3D(k) << '\n';
 			}
-			outFile << "$EndNodes" << std::endl;
+			outFile << "$EndNodes" << '\n';
 			// Write elements
-			outFile << "$Elements\n" << inMesh->getNumElements() << std::endl;
+			outFile << "$Elements\n" << inMesh->getNumElements() << '\n';
 			for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
 			{
 				const std::vector<std::size_t>& curElem = inMesh->getElementConnectivity(k);
@@ -469,18 +469,18 @@ namespace OutputWriter
 				outFile << "2 " << inMesh->getMatID(k) << " " << inMesh->getMatID(k);
 				for(std::size_t kc = 0; kc < curElem.size(); ++kc)
 					outFile << " " << curElem[kc]+1;
-				outFile << std::endl;
+				outFile << '\n';
 			}
-			outFile << "$EndElements"<< std::endl;
+			outFile << "$EndElements"<< '\n';
 		}
 		// Write data
-		outFile << "$ElementData\n1\nDensity" << std::endl;
-		outFile << "1\n" << kt << std::endl;
-		outFile << "3\n" << kt << "\n1" << std::endl;
-		outFile << inMesh->getNumElements() << std::endl;
+		outFile << "$ElementData\n1\nDensity" << '\n';
+		outFile << "1\n" << kt << '\n';
+		outFile << "3\n" << kt << "\n1" << '\n';
+		outFile << inMesh->getNumElements() << '\n';
 		for(std::size_t k = 0; k < inMesh->getNumElements(); ++k)
-			outFile << k+1 << " " << inMesh->getOptVal(k) << std::endl;
-		outFile << "$EndElementData" << std::endl;
+			outFile << k+1 << " " << inMesh->getOptVal(k) << '\n';
+		outFile << "$EndElementData" << '\n';
 	}
 
 	void outputTORData(const TopOptRep* outTOR, const std::string& fileName)
@@ -490,21 +490,21 @@ namespace OutputWriter
 		std::vector<std::vector<int> > discreteVars;
 		std::vector<std::vector<double> > realVars;
 		outTOR->getMPIRep(discreteVars, realVars);
-		outFile << discreteVars.size() << std::endl;
+		outFile << discreteVars.size() << '\n';
 		for(std::size_t k1 = 0; k1 < discreteVars.size(); ++k1)
 		{
-			outFile << discreteVars[k1].size() << std::endl;
+			outFile << discreteVars[k1].size() << '\n';
 			for(std::size_t k2 = 0; k2 < discreteVars[k1].size(); ++k2)
 				outFile << discreteVars[k1][k2] << " ";
-			outFile << std::endl;
+			outFile << '\n';
 		}
-		outFile << realVars.size() << std::endl;
+		outFile << realVars.size() << '\n';
     for(std::size_t k1 = 0; k1 < realVars.size(); ++k1)
     {
-      outFile << realVars[k1].size() << std::endl;
+      outFile << realVars[k1].size() << '\n';
       for(std::size_t k2 = 0; k2 < realVars[k1].size(); ++k2)
         outFile << realVars[k1][k2] << " ";
-      outFile << std::endl;
+      outFile << '\n';
     }
 	}
 }
