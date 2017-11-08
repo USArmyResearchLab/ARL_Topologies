@@ -193,7 +193,7 @@ std::vector<std::map<std::size_t, double>> Filter2D<WeightFunc>::diffFilter(cons
 		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
 		{
 			std::map<std::size_t, double>& curRes = res[idVec[k2]];
-			curRes.emplace(k, fVec[k2]/normVal);
+			curRes.emplace_hint(curRes.end(), k, fVec[k2]/normVal);
 		}
 	}
 	return res;
