@@ -29,9 +29,10 @@ using namespace Topologies;
 
 template <typename T>
 LoadCondition<T>::LoadCondition(BCType inLC, const std::vector<T>& inLoadVec, unsigned nodeSetID, MeshFileFormat inMFF, 
-	const std::string& meshFileName, unsigned dim) :
+	const std::string& meshFileName, unsigned dim, CoordinateSystem::Type inCT) :
 	type(inLC),
-  loadVec(inLoadVec)
+  loadVec(inLoadVec),
+	ct(inCT)
 {
 	if(inMFF == mffExodus)
 	{
@@ -77,10 +78,12 @@ LoadCondition<T>::LoadCondition(BCType inLC, const std::vector<T>& inLoadVec, un
 }
 
 template <typename T>
-LoadCondition<T>::LoadCondition(BCType inBC, const std::vector<T>& inLoadVec, std::unique_ptr<GeometricEntity> inGE):
+LoadCondition<T>::LoadCondition(BCType inBC, const std::vector<T>& inLoadVec, std::unique_ptr<GeometricEntity> inGE, 
+																CoordinateSystem::Type inCT):
 	type(inBC),
 	loadVec(inLoadVec),
-	upGE(std::move(inGE))
+	upGE(std::move(inGE)),
+	ct(inCT)
 {
 }
 
@@ -88,7 +91,8 @@ template <typename T>
 LoadCondition<T>::LoadCondition(const LoadCondition<T>& inLC):
 	type(inLC.type),
 	loadVec(inLC.loadVec),
-	nodeIDVec(inLC.nodeIDVec)
+	nodeIDVec(inLC.nodeIDVec),
+	ct(inLC.ct)
 {
 	if(inLC.upGE)
 		upGE = inLC.upGE->clone();
@@ -114,6 +118,7 @@ void LoadCondition<T>::swap(LoadCondition<T>& rhs)
   std::swap(type, rhs.type);
   upGE.swap(rhs.upGE);
 	nodeIDVec.swap(rhs.nodeIDVec);
+	std::swap(ct, rhs.ct);
 }
 
 template <typename T>
@@ -146,10 +151,7 @@ void LoadCondition<T>::applyLC(const TOMesh2D* const inMesh, std::vector< std::v
 	lcVecX.insert(lcVecX.end(), nodeIDVec.size(), loadVec[0]);
 	lcVecY.insert(lcVecY.end(), nodeIDVec.size(), loadVec[1]);
 	for(std::size_t k = 0; k < nodeIDVec.size(); ++k)
-	{
-		std::vector<std::size_t> tmp(1, nodeIDVec[k]);
-		elemIds.push_back(tmp);
-	}
+		elemIds.push_back({nodeIDVec[k]});
 }
 
 template <typename T>
@@ -161,9 +163,7 @@ void LoadCondition<T>::applyLC0(const TOMesh2D* const inMesh, std::vector< std::
 		Mesh_K::Point_2 tmpPt1 = inMesh->getNode2D(k);
 		if(upGE->isPointCoincident(tmpPt1, tol))
 		{
-			std::vector<std::size_t> tmp;
-			tmp.push_back(k);
-			elemIds.push_back(tmp);
+			elemIds.push_back({k});
 			lcVecX.push_back(loadVec[0]);
 			lcVecY.push_back(loadVec[1]);
 		}
@@ -232,10 +232,7 @@ void LoadCondition<T>::applyLC(const TOMesh3D* const inMesh, std::vector<std::ve
 	lcVecY.insert(lcVecY.end(), nodeIDVec.size(), loadVec[1]);
 	lcVecZ.insert(lcVecZ.end(), nodeIDVec.size(), loadVec[2]);
 	for(std::size_t k = 0; k < nodeIDVec.size(); ++k)
-	{
-		std::vector<std::size_t> tmp(1, nodeIDVec[k]);
-		elemIds.push_back(tmp);
-	}
+		elemIds.push_back({nodeIDVec[k]});
 }
 
 template <typename T>
@@ -247,9 +244,7 @@ void LoadCondition<T>::applyLC0(const TOMesh3D* const inMesh, std::vector<std::v
 		Mesh_K::Point_3 tmpP = inMesh->getNode3D(k);
 		if(upGE->isPointCoincident(tmpP, tol))
 		{
-			std::vector<std::size_t> tmp;
-			tmp.push_back(k);
-			elemIds.push_back(tmp);
+			elemIds.push_back({k});
 			lcVecX.push_back(loadVec[0]);
 			lcVecY.push_back(loadVec[1]);
 			lcVecZ.push_back(loadVec[2]);

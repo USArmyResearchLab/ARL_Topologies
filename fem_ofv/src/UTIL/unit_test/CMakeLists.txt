@@ -12,4 +12,8 @@ add_test(Point3dTest Point3dTest)
 add_executable(GeometricEntityTest test_geometricentity.cpp)
 target_link_libraries(GeometricEntityTest ${FEM_LIB} ${NLOPT_LIB} ${TOPOLOGIESCORE_LIB})
 add_test(GeometricEntityTest GeometricEntityTest)
+# CoordinateSystem
+add_executable(CoordinateSystemTest test_coordinatesystem.cpp)
+target_link_libraries(CoordinateSystemTest ${FEM_LIB} ${NLOPT_LIB} ${TOPOLOGIESCORE_LIB})
+add_test(CoordinateSystemTest CoordinateSystemTest)
 

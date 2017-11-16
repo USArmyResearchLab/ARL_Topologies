@@ -24,6 +24,7 @@
 #include "topologiesdefs.h"
 #include "REP/cgal_types.h"
 #include "geometricentity.h"
+#include "coordinatesystem.h"
 
 namespace Topologies{
 class TOMesh;
@@ -38,9 +39,10 @@ class LoadCondition
 public:
 	//! Constructor defining a LoadCondition from an Exodus mesh file
 	LoadCondition(BCType inLC, const std::vector<T>& inLoadVec, unsigned nodeSetID, Topologies::MeshFileFormat inMFF, 
-		const std::string& meshFileName, unsigned dim);
+		const std::string& meshFileName, unsigned dim, CoordinateSystem::Type inCT = CoordinateSystem::Type::cartesian);
 	//! Constructor defining a LoadCondition from a GeometricEntity file
-	LoadCondition(BCType inLC, const std::vector<T>& inLoadVec, std::unique_ptr<GeometricEntity> inGE);
+	LoadCondition(BCType inLC, const std::vector<T>& inLoadVec, std::unique_ptr<GeometricEntity> inGE, 
+								CoordinateSystem::Type inCT = CoordinateSystem::Type::cartesian);
 	LoadCondition(const LoadCondition& inLC);
   LoadCondition(LoadCondition&& rhs);
   LoadCondition& operator=(LoadCondition rhs);
@@ -85,6 +87,8 @@ public:
 	BCType getLCT() const;
 	//! Returns the load vector
 	std::vector<T> getLoadVec() const;
+	//! Returns the coordinate system type of the load vector
+	CoordinateSystem::Type getCoordinateSystemType() const;
 private:
 	void applyLC0(const Topologies::TOMesh2D* const inMesh, std::vector< std::vector<std::size_t> >& elemIds,
 								std::vector<T>& lcVecX, std::vector<T>& lcVecY) const;
@@ -101,6 +105,7 @@ private:
 	std::unique_ptr<GeometricEntity> upGE;
 	std::vector<T> loadVec;
 	std::vector<std::size_t> nodeIDVec;
+	CoordinateSystem::Type ct;
 	static const double tol;
 };
 
@@ -116,4 +121,11 @@ std::vector<T> LoadCondition<T>::getLoadVec() const
 	return loadVec;
 }
 
+template <typename T>
+CoordinateSystem::Type LoadCondition<T>::getCoordinateSystemType() const
+{
+	return ct;
+}
+
 #endif
+

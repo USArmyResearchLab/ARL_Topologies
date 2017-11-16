@@ -30,6 +30,8 @@
 #include "femmesh.h"
 #include "element.h"
 #include "IO/exotxtmeshloader.h"
+#include "coordinatesystem.h"
+#include "point3d.h"
 
 namespace Topologies{
 class TOMesh;
@@ -41,14 +43,17 @@ class GenericMaterial;
 */
 struct ExoBC
 {
-	ExoBC() : dim(2), isSupport(false), xsup(false), ysup(false), zsup(false), nodeSetID(0) {}
-	ExoBC(unsigned inDim) : dim(inDim), isSupport(false), xsup(false), ysup(false), zsup(false), nodeSetID(0) {}
+	ExoBC() : dim(2), isSupport(false), xsup(false), ysup(false), zsup(false), nodeSetID(0), 
+													ct(CoordinateSystem::Type::cartesian) {}
+	ExoBC(unsigned inDim) : dim(inDim), isSupport(false), xsup(false), ysup(false), zsup(false), 
+													nodeSetID(0), ct(CoordinateSystem::Type::cartesian) {}
 	unsigned dim;
 	bool isSupport;
 	bool xsup, ysup, zsup;
-	Topologies::Point_3_base loadVec;
+	Point3D loadVec;
 	unsigned nodeSetID;
 	std::vector<std::size_t> nodeIDVec;
+	CoordinateSystem::Type ct;
 };
 
 //! A class that sets up and solves a static, linear elastic finite element problem
@@ -96,6 +101,8 @@ private:
 	double elementCompliance(const std::size_t kelem, const EigenDenseMat& elemMat, std::size_t numUnk) const;
 	double elementCompliance2D(const std::size_t kelem, const EigenDenseMat& elemMat, std::size_t numUnk) const;
 	double elementCompliance3D(const std::size_t kelem, const EigenDenseMat& elemMat, std::size_t numUnk) const;
+
+	Point3D getMeshPoint(std::size_t kn) const;
 
 	std::unique_ptr<FEMMesh> probMesh;
 	std::unique_ptr<EigenSparseMat> pFEMMatrix;

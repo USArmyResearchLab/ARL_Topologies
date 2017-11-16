@@ -131,6 +131,8 @@ public:
 	Cell* getCell(std::size_t iCell) const;
 	//! Returns patch iPatch
 	Element<Point3D>* getPatch(std::size_t iPatch) const;
+	//! Returns node iNode
+	Point3D* getNode(std::size_t iNode) const;
 	//@}
 	//! Returns the volume of the mesh (sum of all element volumes)
 	double computeVolume() const;
@@ -202,4 +204,11 @@ inline Element<Point3D>* Mesh3D::getPatch(std::size_t iPatch) const
 	return patchVec[iPatch].get();
 }
 
+inline Point3D* Mesh3D::getNode(std::size_t iNode) const
+{
+	assert(iNode < nodeVec.size());
+	return nodeVec[iNode].get();
+}
+
 #endif
+

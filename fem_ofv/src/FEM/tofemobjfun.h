@@ -122,11 +122,13 @@ public:
   const std::vector<std::vector<LoadCondition<double>>>& getLCVec() const {return lcVV;}
 private:
 	static BCType parseBCType(const std::string& inBCStr);
+	static CoordinateSystem::Type parseCSType(const std::string& inCSTStr);
 	void setFileFormat(const pugi::xml_node& rootNode);
 	void parseExoLC(const pugi::xml_node& rootNode);
 	void parseExoBC(const pugi::xml_node& rootNode);
 	void parseGeoBC(const pugi::xml_node& rootNode);
 	void parseGeoLC(const pugi::xml_node& rootNode);
+	CoordinateSystem::Type readCoordinateSystemAttribute(const pugi::xml_node& rootNode) const;
 
 	unsigned dim;
 	double rho, E, nu, maxDisplacement;

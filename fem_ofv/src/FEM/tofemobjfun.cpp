@@ -25,6 +25,8 @@
 #include "REP/tomesh.h"
 #include "IO/exotxtmeshloader.h"
 #include "UTIL/helper.h"
+#include "point2d.h"
+#include "point3d.h"
 
 using namespace Topologies;
 
@@ -185,32 +187,31 @@ std::vector<ExoBC> TOFEMObjFun::generateExoBCVec(const TOMesh* const inMesh, std
 	assert(loadCase < lcVV.size());
 	const std::vector<LoadCondition<double>>& lcVec = lcVV[kLoad];
 	outEBC.reserve(bcVec.size() + lcVec.size());
-	typedef std::vector<BoundaryCondition>::const_iterator vbcit;
-	for(vbcit cit = bcVec.begin(); cit != bcVec.end(); ++cit)
+	for(auto const& bc : bcVec)
 	{
 		outEBC.push_back(ExoBC(dim));
 		ExoBC& curebc = outEBC.back();
 		curebc.dim = dim;
 		curebc.isSupport = true;
-		std::vector<bool> supps = cit->getFixedCoords();
+		std::vector<bool> supps = bc.getFixedCoords();
 		curebc.xsup = supps[0];
 		curebc.ysup = supps[1];
 		if(dim == 3)
 			curebc.zsup = supps[2];
-		curebc.nodeIDVec = cit->applyBC(inMesh);
+		curebc.nodeIDVec = bc.applyBC(inMesh);
 	}	
 	// Now load conditions
-	typedef std::vector<LoadCondition<double>>::const_iterator vlcit;
-	for(vlcit cit = lcVec.begin(); cit != lcVec.end(); ++cit)
+	for(auto const& lc : lcVec)
 	{
 		outEBC.push_back(ExoBC(dim));
 		ExoBC& curebc = outEBC.back();
 		curebc.dim = dim;
 		curebc.isSupport = false;
-		cit->applyLC(inMesh, curebc.nodeIDVec);
-		std::vector<double> loadVec = cit->getLoadVec();
+		lc.applyLC(inMesh, curebc.nodeIDVec);
+		std::vector<double> loadVec = lc.getLoadVec();
 		assert(loadVec.size() >= 2);
-		curebc.loadVec = Point_3_base(loadVec[0], loadVec[1], loadVec.size() > 2 ? loadVec[2] : 0.);
+		curebc.loadVec = Point3D(loadVec[0], loadVec[1], loadVec.size() > 2 ? loadVec[2] : 0.);
+		curebc.ct = lc.getCoordinateSystemType();
 	}
 	return outEBC;
 }
@@ -323,7 +324,20 @@ void FEMInputLoader::parseExoLC(const pugi::xml_node& rootNode)
   {
     errorMessage(pe, true);
   }
-	lcVV.back().push_back(LoadCondition<double>(bctUnknown, vecRes, nodeSetID, inputMFF, meshFilename, dim));
+	CoordinateSystem::Type ct = readCoordinateSystemAttribute(rootNode.child("load_vector"));
+	lcVV.back().push_back(LoadCondition<double>(bctUnknown, vecRes, nodeSetID, inputMFF, meshFilename, dim, ct));
+}
+
+CoordinateSystem::Type FEMInputLoader::parseCSType(const std::string& inCSTStr)
+{
+	using namespace InputLoader;
+	if(inCSTStr == "cartesian")
+		return CoordinateSystem::Type::cartesian;
+	else if(inCSTStr == "cylindrical")
+		return CoordinateSystem::Type::cylindrical;
+	else if(inCSTStr == "spherical")
+		return CoordinateSystem::Type::spherical;
+	throw ParseException(petUnknownInput, "Unknown coordinate system type");
 }
 
 BCType FEMInputLoader::parseBCType(const std::string& inBCStr)
@@ -373,6 +387,25 @@ void FEMInputLoader::parseGeoBC(const pugi::xml_node& rootNode)
 	bcVec.push_back(BoundaryCondition(outBCT, xsup, ysup, zsup, std::move(upGE)));
 }
 
+CoordinateSystem::Type FEMInputLoader::readCoordinateSystemAttribute(const pugi::xml_node& rootNode) const
+{
+	using namespace InputLoader;
+	CoordinateSystem::Type ct;
+	std::string cs;
+	try
+	{
+		cs = readStringAttribute(rootNode, "coordinate_type");
+		ct = parseCSType(cs);
+	}
+	catch(ParseException pe)
+	{
+		ct = CoordinateSystem::Type::cartesian;
+		if(!cs.empty())
+			std::cerr << "Warning: Unknown coordinate system in load_vector: " << cs << "\nDefaulting to cartesian" << std::endl;
+	}
+	return ct;
+}
+
 void FEMInputLoader::parseGeoLC(const pugi::xml_node& rootNode)
 {
 	using namespace InputLoader;
@@ -391,7 +424,8 @@ void FEMInputLoader::parseGeoLC(const pugi::xml_node& rootNode)
   {
     errorMessage(pe, true);
   }
-  lcVV.back().push_back(LoadCondition<double>(outBCT, vecRes, std::move(upGE)));
+	CoordinateSystem::Type ct = readCoordinateSystemAttribute(rootNode.child("load_vector"));
+  lcVV.back().push_back(LoadCondition<double>(outBCT, vecRes, std::move(upGE), ct));
 }
 
 void FEMInputLoader::setFileFormat(const pugi::xml_node& rootNode)

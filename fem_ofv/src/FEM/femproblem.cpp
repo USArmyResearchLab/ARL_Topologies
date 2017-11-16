@@ -83,30 +83,40 @@ void FEMProblem::swap(FEMProblem& arg2)
 	std::swap(invalid, arg2.invalid);
 }
 
+Point3D FEMProblem::getMeshPoint(std::size_t kn) const
+{
+	if(probMesh->getDim() == 2)
+	{
+		Point2D pt = *dynamic_cast<Mesh2D*>(probMesh.get())->getNode(kn);
+		return Point3D(pt.x, pt.y, 0.);
+	}
+	return *dynamic_cast<Mesh3D*>(probMesh.get())->getNode(kn);
+}
+
 void FEMProblem::changeBoundaryConditionsTo(const std::vector<ExoBC>& bcVec)
 {
 	std::size_t nnodes = probMesh->getNumUnknowns();
 	fixedDOFs = std::vector<bool>(dim*nnodes, false);
-	loadVec = std::map<std::size_t,double>();
-	for(std::size_t k = 0; k < bcVec.size(); ++k)
+	loadVec.clear();
+	for(auto const& curBC : bcVec)
 	{
-		const ExoBC& curBC = bcVec[k];
-		for(std::size_t kn = 0; kn < curBC.nodeIDVec.size(); ++kn)
+		for(auto kn : curBC.nodeIDVec)
 		{
 			// Set up supports
 			if(curBC.isSupport)
 			{
-				fixedDOFs[curBC.nodeIDVec[kn]] = curBC.xsup;
-				fixedDOFs[curBC.nodeIDVec[kn] + nnodes] = curBC.ysup;
+				fixedDOFs[kn] = curBC.xsup;
+				fixedDOFs[kn + nnodes] = curBC.ysup;
 				if(dim == 3)
-					fixedDOFs[curBC.nodeIDVec[kn] + 2*nnodes] = curBC.zsup;
+					fixedDOFs[kn + 2*nnodes] = curBC.zsup;
 			}
 			else // Set up loads
 			{
-				loadVec[curBC.nodeIDVec[kn]] = curBC.loadVec.x();
-				loadVec[curBC.nodeIDVec[kn] + nnodes] = curBC.loadVec.y();
+				Point3D cartVec = CoordinateSystem::convertVector(curBC.loadVec, getMeshPoint(kn), curBC.ct);
+				loadVec[kn] = cartVec.x;
+				loadVec[kn + nnodes] = cartVec.y;
 				if(dim == 3)
-					loadVec[curBC.nodeIDVec[kn] + 2*nnodes] = curBC.loadVec.z();
+					loadVec[kn + 2*nnodes] = cartVec.z;
 			}
 		}
 	}
