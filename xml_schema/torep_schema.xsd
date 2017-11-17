@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<!--DEFINED TYPES-->
+	<xs:complexType name="doublelist" mixed="true">
+		<xs:sequence>
+			<xs:element name="d" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="uintlist" mixed="true">
+		<xs:sequence>
+			<xs:element name="d" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="point2type">
+		<xs:attribute name="x" type="xs:double" use="required"/>
+		<xs:attribute name="y" type="xs:double" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="fixedblocktype">
+		<xs:attribute name="block_id" type="xs:unsignedInt" use="required"/>
+		<xs:attribute name="value" type="xs:double" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="polygonlisttype">
+		<xs:sequence>
+			<xs:element name="point_2" type="point2type" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="fileformats">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="exodusii"/>
+			<xs:enumeration value="stl"/>
+			<xs:enumeration value="gmsh"/>
+			<xs:enumeration value="polygon"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="meshtypes">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="tri"/>
+			<xs:enumeration value="quad"/>
+			<xs:enumeration value="tet"/>
+			<xs:enumeration value="hex"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!--STRUCTURED MESHS-->
+	<xs:complexType name="genericvoldef">
+		<xs:all>
+			<xs:element name="discretization_size" type="uintlist" minOccurs="1"/>
+			<xs:element name="dimensions" type="doublelist" minOccurs="1"/>
+			<xs:element name="mesh_element_type" type="meshtypes" minOccurs="1"/>
+			<xs:element name="penalty_power" type="xs:double" minOccurs="0"/>
+			<xs:element name="minimum_density" type="xs:double" minOccurs="0"/>
+			<xs:element name="filter_radius" type="xs:double" minOccurs="0"/>
+			<xs:element name="heaviside_beta" type="xs:double" minOccurs="0"/>
+			<xs:element name="threshold" type="xs:double" minOccurs="0"/>
+			<xs:element name="rank" type="xs:unsignedInt" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="tag" type="xs:string" use="required"/>
+	</xs:complexType>
+	<!--UNSTRUCTURED MESHES-->
+	<xs:complexType name="genericmeshdef">
+		<xs:all>
+			<xs:element name="file_name" type="xs:string" minOccurs="0"/>
+			<xs:element name="file_format" type="fileformats" minOccurs="0"/>
+			<xs:element name="polygon_list" type="polygonlisttype" minOccurs="0"/>
+			<xs:element name="penalty_power" type="xs:double" minOccurs="0"/>
+			<xs:element name="minimum_density" type="xs:double" minOccurs="0"/>
+			<xs:element name="filter_radius" type="xs:double" minOccurs="0"/>
+			<xs:element name="heaviside_beta" type="xs:double" minOccurs="0"/>
+			<xs:element name="threshold" type="xs:double" minOccurs="0"/>
+			<xs:element name="fixed_block" type="fixedblocktype" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="tag" type="xs:string" use="required"/>
+	</xs:complexType>
+	<!--TOP LEVEL TAGS-->
+	<xs:element name="pixel" type="genericvoldef"/>
+	<xs:element name="voxel" type="genericvoldef"/>
+	<xs:element name="heaviside2d" type="genericvoldef"/>
+	<xs:element name="heaviside3d" type="genericvoldef"/>
+	<xs:element name="mesh2d" type="genericmeshdef"/>
+	<xs:element name="mesh3d" type="genericmeshdef"/>
+	<xs:element name="heavisidemesh2d" type="genericmeshdef"/>
+	<xs:element name="heavisidemesh3d" type="genericmeshdef"/>
+
+</xs:schema>

@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<!--DEFINED TYPES-->
+	<xs:simpleType name="outputtypes">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="surface"/>
+			<xs:enumeration value="volume"/>
+			<xs:enumeration value="extrude"/>
+			<xs:enumeration value="objective_function_value"/>
+			<xs:enumeration value="raw_data"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="fileformats">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="matlab"/>
+			<xs:enumeration value="stl"/>
+			<xs:enumeration value="vtk"/>
+			<xs:enumeration value="gmsh"/>
+			<xs:enumeration value="default"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="reptypes">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="pixel"/>
+			<xs:enumeration value="voxel"/>
+			<xs:enumeration value="heaviside2d"/>
+			<xs:enumeration value="heaviside3d"/>
+			<xs:enumeration value="mesh2d"/>
+			<xs:enumeration value="mesh3d"/>
+			<xs:enumeration value="heavisidemesh2d"/>
+			<xs:enumeration value="heavisidemesh3d"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="opttypes">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="oc"/>
+			<xs:enumeration value="mma"/>
+			<xs:enumeration value="bfgs"/>
+			<xs:enumeration value="ga"/>
+			<xs:enumeration value="pga"/>
+			<xs:enumeration value="pso"/>
+			<xs:enumeration value="gd"/>
+			<xs:enumeration value="chain"/>
+			<xs:enumeration value="refine"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="initialguesstypes">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="random"/>
+			<xs:enumeration value="constant"/>
+			<xs:enumeration value="constant_with_noise"/>
+			<xs:enumeration value="file"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--OUTPUT-->
+	<xs:complexType name="outputtype">
+		<xs:all>
+			<xs:element name="file_name" type="xs:string"/>
+			<xs:element name="file_format" type="fileformats"/>
+			<xs:element name="output_period" type="xs:int" minOccurs="0"/>
+			<xs:element name="overwrite" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="write_periodic_results" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="write_final_result" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="extrusion_length" type="xs:double" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="type" type="outputtypes" use="required"/>
+	</xs:complexType>
+	<!--REPRESENTATION-->
+	<xs:complexType name="representationtype">
+		<xs:attribute name="type" type="reptypes" use="required"/>
+		<xs:attribute name="tag" type="xs:string" use="required"/>
+		<xs:attribute name="input_file" type="xs:string" use="optional"/>
+	</xs:complexType>
+	<!--OPTIMIZER-->
+	<xs:complexType name="optimizertype">
+		<xs:attribute name="type" type="opttypes" use="required"/>
+		<xs:attribute name="tag" type="xs:string" use="required"/>
+		<xs:attribute name="input_file" type="xs:string" use="optional"/>
+	</xs:complexType>
+	<!--OBJECTIVE FUNCTION-->
+	<xs:complexType name="objectivefunctiontype">
+		<xs:attribute name="shared_library" type="xs:string" use="required"/>
+		<xs:attribute name="input_file" type="xs:string" use="required"/>
+	</xs:complexType>
+	<!--INITIAL GUESS-->
+	<xs:complexType name="initialguesstype">
+		<xs:all>
+			<xs:element name="constant_val" type="xs:double" minOccurs="0"/>
+			<xs:element name="noise_min" type="xs:double" minOccurs="0"/>
+			<xs:element name="noise_max" type="xs:double" minOccurs="0"/>
+			<xs:element name="file_name" type="xs:string" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="type" type="initialguesstypes" use="required"/>
+	</xs:complexType>
+	<!--MAIN ELEMENT-->
+	<xs:element name="topologies">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="representation" type="representationtype"/>
+				<xs:element name="optimizer" type="optimizertype"/>
+				<xs:element name="objective_function" type="objectivefunctiontype"/>
+				<xs:element name="initial_guess" type="initialguesstype"/>
+				<xs:element name="num_processors_per_ofv" type="xs:unsignedInt" minOccurs="0"/>
+				<xs:element name="output" type="outputtype" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

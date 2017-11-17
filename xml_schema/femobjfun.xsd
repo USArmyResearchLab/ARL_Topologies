@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<!--GEOMETRIC TYPES-->
+	<xs:complexType name="point2type">
+		<xs:attribute name="x" type="xs:double" use="required"/>
+		<xs:attribute name="y" type="xs:double" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="point3type">
+		<xs:attribute name="x" type="xs:double" use="required"/>
+		<xs:attribute name="y" type="xs:double" use="required"/>
+		<xs:attribute name="z" type="xs:double" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="lineorplanetype">
+		<xs:attribute name="intercept" type="xs:double" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="polygon2type">
+		<xs:sequence>
+			<xs:element name="point_2" type="point2type" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="linesegment2type">
+		<xs:sequence>
+			<xs:element name="point_2" type="point2type" minOccurs="1"/>
+			<xs:element name="point_2" type="point2type" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="linesegment3type">
+		<xs:sequence>
+			<xs:element name="point_3" type="point3type" minOccurs="1"/>
+			<xs:element name="point_3" type="point3type" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="geometrytype">
+		<xs:choice>
+			<xs:element name="h_line" type="lineorplanetype"/>
+			<xs:element name="v_line" type="lineorplanetype"/>
+			<xs:element name="xy_plane" type="lineorplanetype"/>
+			<xs:element name="yz_plane" type="lineorplanetype"/>
+			<xs:element name="xz_plane" type="lineorplanetype"/>
+			<xs:element name="point_2" type="point2type"/>
+			<xs:element name="point_3" type="point3type"/>
+			<xs:element name="line_segment_2" type="linesegment2type"/>
+			<xs:element name="line_segment_3" type="linesegment3type"/>
+			<xs:element name="polygon2" type="polygon2type"/>
+		</xs:choice>
+	</xs:complexType>
+	<!--OTHER DEFINED TYPES-->
+	<xs:complexType name="doublelist" mixed="true">
+		<xs:sequence>
+			<xs:element name="d" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="fileformattype">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="exodusii"/>
+			<xs:enumeration value="stl"/>
+			<xs:enumeration value="gmsh"/>
+			<xs:enumeration value="polygon"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="dimtype">
+		<xs:restriction base="xs:unsignedInt">
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="coordinatetypes">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:enumeration value="cartesian"/>
+			<xs:enumeration value="cylindrical"/>
+			<xs:enumeration value="spherical"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="loadvectortype" mixed="true">
+		<xs:sequence>
+			<xs:element name="d" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="coordinate_type" type="coordinatetypes"/>
+	</xs:complexType>
+	<xs:complexType name="filebctype">
+		<xs:all>
+			<xs:element name="node_set_id" type="xs:unsignedInt" minOccurs="1"/>
+			<xs:element name="x_support" type="xs:boolean" minOccurs="1"/>
+			<xs:element name="y_support" type="xs:boolean" minOccurs="1"/>
+			<xs:element name="z_support" type="xs:boolean" minOccurs="0"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="geobctype">
+		<xs:all>
+			<xs:element name="x_support" type="xs:boolean" minOccurs="1"/>
+			<xs:element name="y_support" type="xs:boolean" minOccurs="1"/>
+			<xs:element name="z_support" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="geometry" type="geometrytype" minOccurs="1"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="filelctype">
+		<xs:all>
+			<xs:element name="node_set_id" type="xs:unsignedInt" minOccurs="1"/>
+			<xs:element name="load_vector" type="loadvectortype" minOccurs="1"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="geolctype">
+		<xs:all>
+			<xs:element name="geometry" type="geometrytype" minOccurs="1"/>
+			<xs:element name="load_vector" type="loadvectortype" minOccurs="1"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="loadcasetype">
+		<xs:sequence>
+			<xs:element name="file_lc" type="filelctype" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="geo_lc" type="geolctype" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--MAIN FEM TYPE-->
+	<xs:complexType name="femtype">
+		<xs:sequence>
+			<xs:element name="dimension" type="dimtype" minOccurs="1"/>
+			<xs:element name="youngs_modulus" type="xs:double" minOccurs="1"/>
+			<xs:element name="poissons_ratio" type="xs:double" minOccurs="1"/>
+			<xs:element name="volume_fraction" type="xs:double" minOccurs="1"/>
+			<xs:element name="density" type="xs:double" minOccurs="0"/>
+			<xs:element name="max_displacement" type="xs:double" minOccurs="0"/>
+			<xs:element name="mesh_file" type="xs:string" minOccurs="0"/>
+			<xs:element name="file_format" type="fileformattype" minOccurs="0"/>
+			<xs:element name="file_bc" type="filebctype" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="geo_bc" type="geobctype" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="load_case" type="loadcasetype" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--TOP LEVEL ELEMENT-->
+	<xs:element name="fem" type="femtype"/>
+</xs:schema>
+

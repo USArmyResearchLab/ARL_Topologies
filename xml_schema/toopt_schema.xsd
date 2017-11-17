@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<xs:simpleType name="doublelist">
+		<xs:list itemType="xs:double"/>
+	</xs:simpleType>
+
+	<xs:complexType name="optimizertype">
+		<xs:attribute name="type" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:enumeration value="oc"/>
+					<xs:enumeration value="mma"/>
+					<xs:enumeration value="bfgs"/>
+					<xs:enumeration value="ga"/>
+					<xs:enumeration value="pga"/>
+					<xs:enumeration value="pso"/>
+					<xs:enumeration value="gd"/>
+					<xs:enumeration value="refine"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="tag" type="xs:string" use="required"/>
+		<xs:attribute name="input_file" type="xs:string" use="optional"/>
+	</xs:complexType>
+
+	<!--GERNERIC LOCAL OPTIMIZERS-->
+	<xs:complexType name="genericlocalopt">
+		<xs:sequence>
+			<xs:element name="max_iterations" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="stop_tol" type="xs:double" minOccurs="0"/>
+			<xs:element name="filter_size" type="xs:double" minOccurs="0"/>
+			<xs:element name="constraint_penalty" type="xs:double" minOccurs="0"/>
+			<xs:element name="penalty_power" type="xs:double" minOccurs="0"/>
+			<xs:element name="step_size" type="xs:double" minOccurs="0"/>
+			<xs:element name="max_step" type="xs:double" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="tag" use="required"/>
+	</xs:complexType>
+	<!--GENETIC ALGORITHMS-->
+	<xs:complexType name="geneticalgorithm">
+		<xs:all>
+			<xs:element name="num_generations" type="xs:unsignedInt"/>
+			<xs:element name="population_size" type="xs:unsignedInt"/>
+			<xs:element name="crossover_rate" type="xs:double"/>
+			<xs:element name="mutation_rate" type="xs:double"/>
+			<xs:element name="mutation_range" type="xs:double"/>
+			<xs:element name="num_tourn" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="num_elitism" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="mutation_radius" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="num_goals" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="sharing_radius" type="xs:double" minOccurs="0"/>
+			<xs:element name="goal_weights" type="doublelist" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="tag"/>
+	</xs:complexType>
+	<!--CHAIN-->
+	<xs:complexType name="chainopt">
+		<xs:sequence>
+			<xs:element name="optimizer" type="optimizertype" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--TOP LEVEL ELEMENTS-->
+	<xs:element name="oc" type="genericlocalopt"/>
+	<xs:element name="mma" type="genericlocalopt"/>
+	<xs:element name="gd" type="genericlocalopt"/>
+	<xs:element name="bfgs" type="genericlocalopt"/>
+	<xs:element name="ga" type="geneticalgorithm"/>
+	<xs:element name="pga" type="geneticalgorithm"/>
+	<xs:element name="chain" type="chainopt"/>
+</xs:schema>
