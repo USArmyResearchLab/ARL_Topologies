@@ -101,7 +101,7 @@ private:
 	double elementCompliance(const std::size_t kelem, const EigenDenseMat& elemMat, std::size_t numUnk) const;
 	double elementCompliance2D(const std::size_t kelem, const EigenDenseMat& elemMat, std::size_t numUnk) const;
 	double elementCompliance3D(const std::size_t kelem, const EigenDenseMat& elemMat, std::size_t numUnk) const;
-
+	bool checkForSimplex() const;
 	Point3D getMeshPoint(std::size_t kn) const;
 
 	std::unique_ptr<FEMMesh> probMesh;
@@ -113,6 +113,7 @@ private:
 	unsigned dim;
 	std::size_t numFreeDOFs;
 	bool invalid;
+	double itTol;
 };
 
 #endif

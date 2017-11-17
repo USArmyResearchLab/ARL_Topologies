@@ -29,7 +29,8 @@
 
 FEMProblem::FEMProblem(const Topologies::TOMesh* const inMesh, const Topologies::GenericMaterial& baseMat) :
 	numFreeDOFs(0),
-	invalid(false)
+	invalid(false),
+	itTol(1e-6)
 {
 	assert(inMesh);
 	assert(baseMat.getNumParameters() > 2); // Assumes 3 material properties: density and 2 Lame parameters
@@ -38,6 +39,9 @@ FEMProblem::FEMProblem(const Topologies::TOMesh* const inMesh, const Topologies:
 		probMesh = std::unique_ptr<FEMMesh>(new Mesh2D(inMesh, baseMat));
 	else if(dim == 3)
 		probMesh = std::unique_ptr<FEMMesh>(new Mesh3D(inMesh, baseMat));
+	// Check element types (tris and tets need lower tolerance on iterative solver)
+	if(checkForSimplex())
+		itTol = 1e-12;
 }
 
 FEMProblem::~FEMProblem()
@@ -54,7 +58,8 @@ FEMProblem::FEMProblem(const FEMProblem& copy) :
 	pForce(copy.pForce ? std::unique_ptr<EigenVector>(new EigenVector(*copy.pForce)) : nullptr),
 	dim(copy.dim),
 	numFreeDOFs(copy.numFreeDOFs),
-	invalid(copy.invalid)
+	invalid(copy.invalid),
+	itTol(copy.itTol)
 {
 }
 
@@ -81,6 +86,15 @@ void FEMProblem::swap(FEMProblem& arg2)
 	std::swap(dim, arg2.dim);
 	std::swap(numFreeDOFs, arg2.numFreeDOFs);
 	std::swap(invalid, arg2.invalid);
+	std::swap(itTol, arg2.itTol);
+}
+
+bool FEMProblem::checkForSimplex() const
+{
+	bool foundSimplex = false;
+	for(std::size_t k = 0; k < probMesh->getNumElements() && !foundSimplex; ++k)
+		foundSimplex = probMesh->getNumElementNodes(k) == (dim + 1);
+	return foundSimplex;
 }
 
 Point3D FEMProblem::getMeshPoint(std::size_t kn) const
@@ -142,10 +156,9 @@ void FEMProblem::solveProblem()
 	pForce = std::unique_ptr<EigenVector>(new EigenVector(*pVVec));
 	invalid = false;
 	// Solve
-//	Eigen::BiCGSTAB<EigenSparseMat> solver;
-	Eigen::ConjugateGradient<EigenSparseMat> solver;
+	Eigen::ConjugateGradient<EigenSparseMat,Eigen::Lower|Eigen::Upper> solver;
 	solver.compute(*pFEMMatrix);
-	solver.setTolerance(1e-14);
+	solver.setTolerance(itTol);
 	unsigned niters = 10000;
 	solver.setMaxIterations(niters);
 	*pVVec = solver.solve(*pForce);
