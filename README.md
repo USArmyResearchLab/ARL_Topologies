@@ -137,7 +137,7 @@ with a basic FEM input given by
 </fem>
 ```
 
-Running `make install` will install several example input files in an `examples` directory. Please see the files contained in that directory for more information on the input file format
+Running `make install` will install several example input files in an `examples` directory. Please see the files contained in that directory for more information on the input file format.  In addition, see the `xml_schema` directory for a set of xml schema files that define the input format.  
 
 ### Objective function shared library
 
