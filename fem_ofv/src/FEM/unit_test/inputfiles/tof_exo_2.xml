@@ -15,7 +15,7 @@
 	<load_case> <!--First load case-->
 		<geo_lc>
 			<load_vector>0.<d/>-1.</load_vector>
-			<geometry type="point_2">
+			<geometry>
 				<point_2 x="0.5" y="-0.5"/>
 			</geometry>
 		</geo_lc>
@@ -23,7 +23,7 @@
 	<load_case> <!--Second load case-->
     <geo_lc>
       <load_vector>0.<d/>1.</load_vector>
-      <geometry type="point_2">
+      <geometry>
         <point_2 x="0.5" y="0.5"/>
       </geometry>
     </geo_lc>

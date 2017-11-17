@@ -114,14 +114,14 @@ with a basic FEM input given by
   <geo_bc>
     <x_support>true</x_support>
     <y_support>true</y_support>
-    <geometry type="v_line">
-      <intercept>0.</intercept>
+    <geometry>
+      <v_line intercept="0."/>
     </geometry>
   </geo_bc>
   <load_case>
     <geo_lc>
       <load_vector>0.<d/>-1.</load_vector>
-      <geometry type="point_2">
+      <geometry>
         <point_2 x="1." y="0."/>
       </geometry>
     </geo_lc>
@@ -129,7 +129,7 @@ with a basic FEM input given by
   <load_case>
     <geo_lc>
       <load_vector>0.<d/>1.</load_vector>
-      <geometry type="point_2">
+      <geometry>
         <point_2 x="1." y="1."/>
       </geometry>
     </geo_lc>

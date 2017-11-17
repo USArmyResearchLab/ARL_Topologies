@@ -8,15 +8,15 @@
     <x_support>true</x_support>
     <y_support>true</y_support>
     <z_support>true</z_support>
-    <geometry type="xy_plane">
-      <intercept>-0.25</intercept>
+    <geometry>
+			<xy_plane intercept="-0.25"/>
     </geometry>
   </geo_bc>
 	<load_case>
 		<geo_lc>
 			<load_vector>0.<d/>0.<d/>-1.</load_vector>
-			<geometry type="xy_plane">
-				<intercept>0.25</intercept>
+			<geometry>
+				<xy_plane intercept="0.25"/>
 			</geometry>
 		</geo_lc>
 	</load_case>

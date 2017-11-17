@@ -373,8 +373,8 @@ void FEMInputLoader::parseGeoBC(const pugi::xml_node& rootNode)
 	std::unique_ptr<GeometricEntity> upGE;
 	try
 	{
-		outBCT = parseBCType(readStringAttribute(rootNode.child("geometry"), "type"));
-		upGE = GeometryEntityFactory::createGeometricEntity(outBCT, rootNode.child("geometry"));
+		outBCT = parseBCType(rootNode.child("geometry").first_child().name());
+		upGE = GeometryEntityFactory::createGeometricEntity(outBCT, rootNode.child("geometry").first_child());
 		xsup = readBoolPCData(rootNode, "x_support");
 		ysup = readBoolPCData(rootNode, "y_support");
 		if(dim == 3)
@@ -414,8 +414,8 @@ void FEMInputLoader::parseGeoLC(const pugi::xml_node& rootNode)
 	std::unique_ptr<GeometricEntity> upGE;
   try
   {
-    outBCT = parseBCType(readStringAttribute(rootNode.child("geometry"), "type"));
-    upGE = GeometryEntityFactory::createGeometricEntity(outBCT, rootNode.child("geometry"));
+		outBCT = parseBCType(rootNode.child("geometry").first_child().name());
+    upGE = GeometryEntityFactory::createGeometricEntity(outBCT, rootNode.child("geometry").first_child());
 		vecRes = readDoubleVecPCData(rootNode, "load_vector");
     if(vecRes.size() != dim)
       throw ParseException(petInvalidNumericalInput, "Wrong number of dimensions in load_vector!");

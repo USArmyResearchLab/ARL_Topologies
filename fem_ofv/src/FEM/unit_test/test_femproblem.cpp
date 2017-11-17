@@ -162,7 +162,7 @@ TEST_CASE("Testing FEMProblem in 3D", "[FEMProblem]")
 		bcVec.push_back(load2);
 		testFE.changeBoundaryConditionsTo(bcVec);
 		REQUIRE(testFE.validRun());
-		REQUIRE(chkVec.isApprox(testFE.getDisplacement(), 1e-14));
+		REQUIRE(chkVec.isApprox(testFE.getDisplacement(), 1e-6));
 		std::pair<double,bool> c = testFE.computeCompliance();
 		REQUIRE(c.first == Approx(0.4));
 		REQUIRE(c.second);
@@ -179,7 +179,7 @@ TEST_CASE("Testing FEMProblem in 3D", "[FEMProblem]")
 		testFE.changeBoundaryConditionsTo(bcVec);
 		const Eigen::VectorXd& sol = testFE.getDisplacement();
 		REQUIRE(testFE.validRun());
-		REQUIRE(chkVec.isApprox(testFE.getDisplacement(), 1e-14));
+		REQUIRE(chkVec.isApprox(testFE.getDisplacement(), 1e-6));
 		std::pair<double,bool> c = testFE.computeCompliance();
 		REQUIRE(c.first == Approx(0.4));
 		REQUIRE(c.second);

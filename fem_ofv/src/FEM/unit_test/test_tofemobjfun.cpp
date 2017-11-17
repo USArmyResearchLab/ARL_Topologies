@@ -47,7 +47,7 @@ void testGradient(TopOptRep& testTOR, TOFEMObjFun& testObjFun)
 	REQUIRE(res2.second);
 	REQUIRE(res1.first.size() == res2.first.size());
 	for(std::size_t k = 0; k < res1.first.size(); ++k)
-		REQUIRE(res1.first[k] == Approx(res2.first[k]).epsilon(1e-4));
+		REQUIRE(res1.first[k] == Approx(res2.first[k]).epsilon(1e-3));
 }
 
 void testConstraintGradient(TopOptRep& testTOR, TOFEMObjFun& testObjFun)

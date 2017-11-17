@@ -460,12 +460,12 @@ std::unique_ptr<GeometricEntity> createGeometricEntity(const BCType inBCT, const
 	std::unique_ptr<GeometricEntity> outGE;
 	if(inBCT == bctPoint2D)
 	{
-		Point_2_base p = readPoint2(rootNode.child("point_2"));
+		Point_2_base p = readPoint2(rootNode);
 		outGE = std::unique_ptr<GeometricEntity>(new Point(p));
 	}
 	else if(inBCT == bctVLine || inBCT == bctHLine)
 	{
-		double intercept = readDoublePCData(rootNode.child("intercept"));
+		double intercept = readDoubleAttribute(rootNode, "intercept");
 		outGE = std::unique_ptr<GeometricEntity>(new InfiniteLine(intercept, inBCT == bctHLine));
 	}
 	else if(inBCT == bctLineSeg)
@@ -485,12 +485,12 @@ std::unique_ptr<GeometricEntity> createGeometricEntity(const BCType inBCT, const
 	}
 	else if(inBCT == bctPoint3D)
 	{
-		Point_3_base p = readPoint3(rootNode.child("point_3"));
+		Point_3_base p = readPoint3(rootNode);
 		outGE = std::unique_ptr<GeometricEntity>(new Point(p));
 	}
 	else if(inBCT == bctXYPlane || inBCT == bctYZPlane || inBCT == bctXZPlane)
 	{
-		double intercept = readDoublePCData(rootNode.child("intercept"));
+		double intercept = readDoubleAttribute(rootNode, "intercept");
 		PlaneOrientation curPO = inBCT == bctXYPlane ? poXY : (inBCT == bctYZPlane ? poYZ : poXZ);
 		outGE = std::unique_ptr<GeometricEntity>(new InfinitePlane(intercept, curPO));
 	}

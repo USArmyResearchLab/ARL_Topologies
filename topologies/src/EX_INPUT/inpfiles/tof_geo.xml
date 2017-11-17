@@ -9,21 +9,23 @@
 	<geo_bc>
 		<x_support>true</x_support>
 		<y_support>true</y_support>
-		<geometry type="v_line">
-			<intercept>-0.5</intercept>
+		<geometry>
+			<v_line intercept="-0.5"/>
 		</geometry>
 	</geo_bc>
 	<load_case>
 <!--	<geo_lc>
  	   <load_vector>-1.<d/>0.</load_vector>
- 	   <geometry type="line_segment_2">
- 	     <point_2 x="0.5" y="-0.5"/>
-				<point_2 x="0.5" y="0.5"/>
+ 	   <geometry>
+			<line_segment_2>
+					<point_2 x="0.5" y="-0.5"/>
+					<point_2 x="0.5" y="0.5"/>
+				</line_segment_2>
  	   </geometry>
 		</geo_lc>-->
 		<geo_lc>
 			<load_vector>0.<d/>-1.</load_vector>
-			<geometry type="point_2">
+			<geometry>
 				<point_2 x="0.5" y="-0.5"/>
 			</geometry>
 		</geo_lc>
