@@ -118,7 +118,7 @@ namespace InputLoader
 		{
 			setFileFormat(rootNode);
 			if(myVMTORS.torMeshType != mffPolygon)
-				fileName = readStringPCData(rootNode, "file_name");
+				fileName = readAndCheckFileNamePCData(rootNode, "file_name");
 			else
 				setPolygonList(rootNode.child("polygon_list"));
 		}

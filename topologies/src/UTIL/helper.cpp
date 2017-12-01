@@ -19,6 +19,7 @@
 // Contact: Raymond Wildman, raymond.a.wildman.civ@mail.mil
 
 #include "helper.h"
+#include <fstream>
 
 namespace Topologies{
 int HelperNS::round(Real x)
@@ -53,5 +54,12 @@ std::vector<double> HelperNS::getPenalizedPixels(const std::vector<double>& pixe
 	std::transform(penalPixels.begin(), penalPixels.end(), penalPixels.begin(), at1d);
 	return penalPixels;
 }
+
+bool HelperNS::isFileReadable(std::string const& fileName)
+{
+	std::ifstream ifs(fileName);
+	return ifs.good();
+}
+
 }
 

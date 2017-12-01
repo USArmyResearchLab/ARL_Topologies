@@ -40,7 +40,7 @@ namespace InputLoader
 		try
 		{
 			// Parse objective function
-			tofInputFileName = readStringAttribute(rootNode, "objective_function", "input_file");
+			tofInputFileName = readAndCheckFileNameAttribute(rootNode, "objective_function", "input_file");
 			tofSharedLibFileName = readStringAttribute(rootNode, "objective_function", "shared_library");
 		}
 		catch(ParseException pe)
@@ -77,7 +77,7 @@ namespace InputLoader
 			setIGT(rootNode);
 			// Conditionally required inputs
 			if(theIGT == igtFile)
-				fileName = readStringPCData(rootNode, "file_name");
+				fileName = readAndCheckFileNamePCData(rootNode, "file_name");
 			if(theIGT == igtConstant || theIGT == igtConstantWithNoise)
 				igConstant = readDoublePCData(rootNode, "constant_val");
 			if(theIGT == igtRandom || theIGT == igtConstantWithNoise)

@@ -89,7 +89,7 @@ TEST_CASE("Testing input parsing using TORGenericMesh","[TORGenericMesh]")
 		REQUIRE(testParser.getFiltRad() == Approx(2.));
 		REQUIRE(testParser.getRepName() == testRNI.getTypeName());
 		REQUIRE(testParser.getVMTORS().torMeshType == mffExodus);
-		REQUIRE(testParser.getFileName() == "test.txt");
+		REQUIRE(testParser.getFileName() == "testquad.txt");
 		std::vector<std::pair<unsigned, double>> blockVec = testParser.getFixedBlockVec();
 		REQUIRE(blockVec.size() == 2);
 		REQUIRE(blockVec[0].first == 2);
@@ -111,7 +111,7 @@ TEST_CASE("Testing input parsing using TORGenericMesh","[TORGenericMesh]")
 		REQUIRE(testParser.getBetaHeavi() == defaultParser.getBetaHeavi());
 		REQUIRE(testParser.getRepName() == testRNI.getTypeName());
 		REQUIRE(testParser.getVMTORS().torMeshType == mffSTL);
-		REQUIRE(testParser.getFileName() == "test.txt");
+		REQUIRE(testParser.getFileName() == "cube.stl");
 		// Check mesh params
 		const GeometryTranslation::MesherData& meshParams = testParser.getMeshParams();
 		REQUIRE(meshParams.tetMeshEdgeSize == Approx(1.));
@@ -136,6 +136,6 @@ TEST_CASE("Testing input parsing using TORGenericMesh","[TORGenericMesh]")
 		REQUIRE(testParser.getBetaHeavi() == defaultParser.getBetaHeavi());
 		REQUIRE(testParser.getRepName() == testRNI.getTypeName());
 		REQUIRE(testParser.getVMTORS().torMeshType == mffExodus);
-		REQUIRE(testParser.getFileName() == "test.txt");
+		REQUIRE(testParser.getFileName() == "testhex.txt");
 	}
 }

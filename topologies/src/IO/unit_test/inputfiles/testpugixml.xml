@@ -8,6 +8,8 @@
 	<booldata2>t</booldata2>
 	<booldata3>n</booldata3>
 	<booldata4>f</booldata4>
+	<file_name1>testtoo.xml</file_name1> <!--File exists-->
+	<file_name2>idontexist.txt</file_name2> <!--File doesn't exist-->
 	<!-- Vectors -->
 	<doublevec>1.<d/>2.<d/>3.</doublevec>
 	<unsignedvec>4<d/> 5<d/>6 <d/> 7 </unsignedvec>
@@ -18,6 +20,7 @@
 	<intattr attr="-2"/>
 	<stringattr attr="This is a string."/>
 	<boolattr attr1="y" attr2="t" attr3="n" attr4="f"/>
+	<filenameattr exists="testga.xml" doesntexist="nope.txt"/>
 	<!--Path test-->
 	<GET>
 		<nothing/>

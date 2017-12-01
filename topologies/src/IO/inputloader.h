@@ -104,7 +104,8 @@ namespace InputLoader
 	//! Convert string to MeshElementType
 	MeshFileFormat parseMeshFileFormat(const std::string& strOType);
 	//! Parsing exception types
-	enum ParseExceptionType{petPCDataNotFound, petAttributeNotFound, petWrongNodeType, petUnknownInput, petInvalidNumericalInput};
+	enum ParseExceptionType{petPCDataNotFound, petAttributeNotFound, petWrongNodeType, petUnknownInput, 
+													petInvalidNumericalInput, petNonexistentFile};
 	//! Struct to output meaningful information in the event of an input parsing error
 	struct ParseException
 	{
@@ -124,7 +125,15 @@ namespace InputLoader
 	std::string readStringPCData(const pugi::xml_node& rootNode, const std::vector<std::string>& path);
 	//! Read string from specified attribute at path in XML tree
 	//! @throws ParseException Throws exception when attribute is not found
-	std::string readStringAttribute(const pugi::xml_node& rootNode, const std::vector<std::string>& path, const std::string& attrName);
+	std::string readStringAttribute(const pugi::xml_node& rootNode, const std::vector<std::string>& path, 
+																const std::string& attrName);
+	//! Read a file name and check for existence
+	//! @throws ParseException Throws exception when path is not found or the file doesn't exist
+	std::string readAndCheckFileNamePCData(const pugi::xml_node& rootNode, const std::vector<std::string>& path);
+	//! Read a file name and check for existence
+	//! @throws ParseException Throws exception when path is not found or the file doesn't exist
+	std::string readAndCheckFileNameAttribute(const pugi::xml_node& rootNode, const std::vector<std::string>& path, 
+																					const std::string& attrName);
 	//! Read double from specified path in XML tree
 	//! @throws ParseException Throws exception when path is not found
 	double readDoublePCData(const pugi::xml_node& rootNode, const std::vector<std::string>& path);
@@ -155,6 +164,13 @@ namespace InputLoader
 	//! Read string from specified attribute at path in XML tree
 	//! @throws ParseException Throws exception when path is not found
 	std::string readStringAttribute(const pugi::xml_node& rootNode, const std::string& path, const std::string& attrName);
+	//! Read a file name and check for existence
+	//! @throws ParseException Throws exception when path is not found or the file doesn't exist
+	std::string readAndCheckFileNamePCData(const pugi::xml_node& rootNode, const std::string& path);
+	//! Read a file name and check for existence
+	//! @throws ParseException Throws exception when path is not found or the file doesn't exist
+	std::string readAndCheckFileNameAttribute(const pugi::xml_node& rootNode, const std::string& path,
+																						const std::string& attrName);
 	//! Read double from specified path in XML tree
 	//! @throws ParseException Throws exception when path is not found
 	double readDoublePCData(const pugi::xml_node& rootNode, const std::string& path);
@@ -182,6 +198,9 @@ namespace InputLoader
 	//! Read string from specified attribute in XML tree
 	//! @throws ParseException Throws exception when path is not found
 	std::string readStringAttribute(const pugi::xml_node& rootNode, const std::string& attrName);
+	//! Read a file name and check for existence
+	//! @throws ParseException Throws exception when path is not found or the file doesn't exist
+	std::string readAndCheckFileNameAttribute(const pugi::xml_node& rootNode, const std::string& attrName);
 	//! Read double from specified attribute in XML tree
 	//! @throws ParseException Throws exception when path is not found
 	double readDoubleAttribute(const pugi::xml_node& rootNode, const std::string& attrName);
@@ -197,6 +216,9 @@ namespace InputLoader
 	//! Read string from XML tree
 	//! @throws ParseException Throws exception when path is not found
 	std::string readStringPCData(const pugi::xml_node& rootNode);
+	//! Read a file name and check for existence
+	//! @throws ParseException Throws exception when path is not found or the file doesn't exist
+	std::string readAndCheckFileNamePCData(const pugi::xml_node& rootNode);
 	//! Read double from XML tree
 	//! @throws ParseException Throws exception when path is not found
 	double readDoublePCData(const pugi::xml_node& rootNode);

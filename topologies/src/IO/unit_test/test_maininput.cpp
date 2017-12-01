@@ -37,7 +37,7 @@ TEST_CASE("Testing main input parsing","[Topologies]")
 	SECTION("Test 1")
 	{
 		testParser.parse(xmldoc);
-		REQUIRE(testParser.getTOFFileName() == "tof_geo.xml");
+		REQUIRE(testParser.getTOFFileName() == "testga.xml");
 		REQUIRE(testParser.getTOFSharedLibName() == "libfemofv.so");
 		REQUIRE(testParser.getNumProcessorsPerOFV() == 10);
 		const RepNodeInfo& testRNI = testParser.getRepNodeInfo();
@@ -102,7 +102,7 @@ TEST_CASE("Testing initial guess parsing","[InitialGuess]")
 	{
 		testParser.parse(rootNode);
 		REQUIRE(testParser.getInitialGuessType() == igtFile);
-		REQUIRE(testParser.getFileName() == "testfile.txt");
+		REQUIRE(testParser.getFileName() == "testhex.txt");
 	}
 }
 

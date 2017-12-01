@@ -80,16 +80,30 @@ std::size_t VolMeshTORSpecification::size() const
 
 namespace InputLoader
 {
+	namespace
+	{
+		void abortOnBadFileStream(const std::ifstream& ifs, const std::string& fileName)
+		{
+			if(!ifs.good())
+			{
+				std::cerr << "File: " << fileName << " is invalid for reading TOR input data.\n  Aborting." << std::endl;
+				abort();
+			}
+		}
+	}
 	void inputTORData(TopOptRep* const inTOR, const std::string& fileName)
 	{
 		std::ifstream inFile(fileName);
+		abortOnBadFileStream(inFile, fileName); // Check that the file opened successfully
 		std::vector<std::vector<int>> discreteVars;
 		std::size_t curSize;
 		inFile >> curSize;
+		abortOnBadFileStream(inFile, fileName); // Check that we read from the stream successfully
 		discreteVars.resize(curSize);
 		for(std::size_t k1 = 0; k1 < discreteVars.size(); ++k1)
 		{
 			inFile >> curSize;
+			abortOnBadFileStream(inFile, fileName); // Check that we read from the stream successfully
 			discreteVars[k1].resize(curSize);
 			for(std::size_t k2 = 0; k2 < discreteVars[k1].size(); ++k2)
 				inFile >> discreteVars[k1][k2];
@@ -100,6 +114,7 @@ namespace InputLoader
 		for(std::size_t k1 = 0; k1 < realVars.size(); ++k1)
 		{
 			inFile >> curSize;
+			abortOnBadFileStream(inFile, fileName); // Check that we read from the stream successfully
 			realVars[k1].resize(curSize);
 			for(std::size_t k2 = 0; k2 < realVars[k1].size(); ++k2)
 				inFile >> realVars[k1][k2];
@@ -286,6 +301,22 @@ namespace InputLoader
 		return std::string(attr.value());
 	}
 
+	std::string readAndCheckFileNamePCData(const pugi::xml_node& rootNode, const std::vector<std::string>& path)
+	{
+		std::string fileName = readStringPCData(rootNode, path);
+		if(!HelperNS::isFileReadable(fileName))
+			throw ParseException(petNonexistentFile, std::move(fileName));
+		return fileName;
+	}
+
+	std::string readAndCheckFileNameAttribute(const pugi::xml_node& rootNode, const std::vector<std::string>& path,
+                                          const std::string& attrName)
+	{
+		std::string fileName = readStringAttribute(rootNode, path, attrName);
+		if(!HelperNS::isFileReadable(fileName))
+			throw ParseException(petNonexistentFile, std::move(fileName));
+		return fileName;
+	}
 	double readDoublePCData(const pugi::xml_node& rootNode, const std::vector<std::string>& path)
 	{
 		pugi::xml_node pcdataNode = traversePCDataNode(rootNode, path);
@@ -344,6 +375,17 @@ namespace InputLoader
 		return readStringAttribute(rootNode, std::vector<std::string>(1,path), attrName);
 	}
 
+	std::string readAndCheckFileNamePCData(const pugi::xml_node& rootNode, const std::string& path)
+  {
+    return readAndCheckFileNamePCData(rootNode, std::vector<std::string>(1,path));
+  }
+
+  std::string readAndCheckFileNameAttribute(const pugi::xml_node& rootNode, const std::string& path,
+                                          const std::string& attrName)
+  {
+    return readAndCheckFileNameAttribute(rootNode, std::vector<std::string>(1,path), attrName);
+  }
+
 	double readDoublePCData(const pugi::xml_node& rootNode, const std::string& path)
 	{
 		return readDoublePCData(rootNode, std::vector<std::string>(1,path));
@@ -389,6 +431,11 @@ namespace InputLoader
 		return readStringAttribute(rootNode, std::vector<std::string>(), attrName);
 	}
 
+	std::string readAndCheckFileNameAttribute(const pugi::xml_node& rootNode, const std::string& attrName)
+	{
+		return readAndCheckFileNameAttribute(rootNode, std::vector<std::string>(), attrName);
+	}
+
 	double readDoubleAttribute(const pugi::xml_node& rootNode, const std::string& attrName)
 	{
 		return readDoubleAttribute(rootNode, std::vector<std::string>(), attrName);	
@@ -412,6 +459,11 @@ namespace InputLoader
 	std::string readStringPCData(const pugi::xml_node& rootNode)
 	{
 		return readStringPCData(rootNode, std::vector<std::string>());
+	}
+
+	std::string readAndCheckFileNamePCData(const pugi::xml_node& rootNode)
+	{
+		return readAndCheckFileNamePCData(rootNode, std::vector<std::string>());
 	}
 
 	double readDoublePCData(const pugi::xml_node& rootNode)
@@ -492,15 +544,17 @@ namespace InputLoader
 	std::string getExceptionName(const ParseExceptionType& inPE)
 	{
 		if(inPE == petPCDataNotFound)
-			return "XML PCData node";
+			return "XML PCData node not found";
 		if(inPE == petAttributeNotFound)
-			return "XML Attribute";
+			return "XML Attribute not found";
 		if(inPE == petUnknownInput)
 			return "Unknown input";
 		if(inPE == petInvalidNumericalInput)
 			return "Invalid numerical input";
 		if(inPE == petWrongNodeType)
 			return "Incorrect node type encountered";
+		if(inPE == petNonexistentFile)
+			return "File does not exist";
 		return "Unknown exception!";
 	}
 
@@ -527,8 +581,13 @@ namespace InputLoader
 			errorMessage(pe, true);
 		}
 		// File name is optional, defaults to current file
-		try{fileName = readStringAttribute(rootNode, "input_file");}
-		catch(ParseException pe){fileName = curFileName;} // Set to current file
+		try{fileName = readAndCheckFileNameAttribute(rootNode, "input_file");}
+		catch(ParseException pe)
+		{
+			if(pe.pet == petNonexistentFile) // File name was given, but doesn't exist
+				errorMessage(pe, true);
+			fileName = curFileName; // Set to current file
+		} 
 	}
 
 	void RepNodeInfo::parseType(const pugi::xml_node& rootNode)

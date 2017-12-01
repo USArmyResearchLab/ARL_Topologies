@@ -245,7 +245,7 @@ void FEMInputLoader::parse(const pugi::xml_node& rootNode)
 	catch(ParseException pe){maxDisplacement = 1e16;}
 	try{rho = readDoublePCData(rootNode, "density");}
 	catch(ParseException pe){rho = 1.;}
-	try{meshFilename = readStringPCData(rootNode, "mesh_file");}
+	try{meshFilename = readAndCheckFileNamePCData(rootNode, "mesh_file");}
 	catch(ParseException pe){}//Only necessary for file_bc input
 	try{setFileFormat(rootNode);}
 	catch(ParseException pe){}// Only necessary for file_bc input

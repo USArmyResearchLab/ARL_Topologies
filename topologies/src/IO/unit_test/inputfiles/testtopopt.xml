@@ -2,9 +2,9 @@
 <topologies>
 	<representation type="pixel" tag="rep1"/>
 	<optimizer type="oc" tag="opt1"/>
-	<objective_function shared_library="libfemofv.so" input_file="tof_geo.xml"/>
+	<objective_function shared_library="libfemofv.so" input_file="testga.xml"/>
 	<initial_guess type="file">
-		<file_name>igfile.txt</file_name>
+		<file_name>testhex.txt</file_name>
 	</initial_guess>
 	<num_processors_per_ofv>10</num_processors_per_ofv>
 	<output type="volume">
@@ -20,5 +20,5 @@
 <topologies_test2>
   <representation type="pixel" tag="rep1"/>
   <optimizer type="oc" tag="opt1"/>
-  <objective_function shared_library="libfemofv.so" input_file="tof_geo.xml"/>
+  <objective_function shared_library="libfemofv.so" input_file="testga.xml"/>
 </topologies_test2>

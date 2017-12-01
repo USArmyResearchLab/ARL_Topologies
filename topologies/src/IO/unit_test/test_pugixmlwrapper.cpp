@@ -61,6 +61,15 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		path.pop_back();
 		path.push_back("booldata4");
 		REQUIRE(readBoolPCData(xmldoc, path) == false);
+		path.pop_back();
+		path.push_back("file_name1");
+		REQUIRE(readAndCheckFileNamePCData(xmldoc, path) == "testtoo.xml");
+		path.pop_back();
+		path.push_back("file_name2");
+		REQUIRE_THROWS_AS(readAndCheckFileNamePCData(xmldoc, path), ParseException); // File doesn't exist
+		// Make sure it's the right exception type
+		try{readAndCheckFileNamePCData(xmldoc, path);}
+		catch(ParseException pe){REQUIRE(pe.pet == petNonexistentFile);}
 		// Check nonexistant node
 		path.pop_back();
 		path.push_back("nothing");
@@ -69,6 +78,7 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		REQUIRE_THROWS_AS(readIntPCData(xmldoc, path), ParseException);
 		REQUIRE_THROWS_AS(readStringPCData(xmldoc, path), ParseException);
 		REQUIRE_THROWS_AS(readBoolPCData(xmldoc, path), ParseException);
+		REQUIRE_THROWS_AS(readAndCheckFileNamePCData(xmldoc, path), ParseException);
 	}
 	// Test 1 node path
 	pugi::xml_node rootNode = xmldoc.child("rootnode");
@@ -83,12 +93,18 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		REQUIRE(readBoolPCData(rootNode, "booldata2") == true);
 		REQUIRE(readBoolPCData(rootNode, "booldata3") == false);
 		REQUIRE(readBoolPCData(rootNode, "booldata4") == false);
+		REQUIRE(readAndCheckFileNamePCData(rootNode, "file_name1") == "testtoo.xml");
+		REQUIRE_THROWS_AS(readAndCheckFileNamePCData(rootNode, "file_name2"), ParseException); // File doesn't exist
+		// Make sure it's the right exception type
+		try{readAndCheckFileNamePCData(rootNode, "file_name2");}
+		catch(ParseException pe){REQUIRE(pe.pet == petNonexistentFile);}
 		// Check nonexistant node
 		REQUIRE_THROWS_AS(readDoublePCData(rootNode, "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readUnsignedPCData(rootNode, "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readIntPCData(rootNode, "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readStringPCData(rootNode, "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readBoolPCData(rootNode, "nothing"), ParseException);
+		REQUIRE_THROWS_AS(readAndCheckFileNamePCData(rootNode, "nothing"), ParseException);
 	}
 	SECTION("PC data, vectors")
 	{
@@ -132,6 +148,13 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		REQUIRE(readBoolPCData(pcdnode) == false);
 		pcdnode = rootNode.child("booldata4");
 		REQUIRE(readBoolPCData(pcdnode) == false);
+		pcdnode = rootNode.child("file_name1");
+		REQUIRE(readAndCheckFileNamePCData(pcdnode) == "testtoo.xml");
+		pcdnode = rootNode.child("file_name2");
+		REQUIRE_THROWS_AS(readAndCheckFileNamePCData(pcdnode), ParseException); // File doesn't exist
+		// Make sure it's the right exception type
+		try{readAndCheckFileNamePCData(pcdnode);}
+		catch(ParseException pe){REQUIRE(pe.pet == petNonexistentFile);}
 		// Check nonexistant node
 		pcdnode = rootNode.child("nothing");
 		REQUIRE_FALSE(pcdnode);
@@ -147,27 +170,35 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		path.push_back("doubleattr");
 		REQUIRE(readDoubleAttribute(xmldoc, path, attrname) == Approx(10.));
 		path.pop_back();
-    path.push_back("unsignedattr");
-    REQUIRE(readUnsignedAttribute(xmldoc, path, attrname) == 3);
-    path.pop_back();
-    path.push_back("intattr");
-    REQUIRE(readIntAttribute(xmldoc, path, attrname) == -2);
-    path.pop_back();
-    path.push_back("stringattr");
-    REQUIRE(readStringAttribute(xmldoc, path, attrname) == "This is a string.");
-    path.pop_back();
-    path.push_back("boolattr");
-    REQUIRE(readBoolAttribute(xmldoc, path, "attr1") == true);
-    REQUIRE(readBoolAttribute(xmldoc, path, "attr2") == true);
-    REQUIRE(readBoolAttribute(xmldoc, path, "attr3") == false);
-    REQUIRE(readBoolAttribute(xmldoc, path, "attr4") == false);
+		path.push_back("unsignedattr");
+		REQUIRE(readUnsignedAttribute(xmldoc, path, attrname) == 3);
+		path.pop_back();
+		path.push_back("intattr");
+		REQUIRE(readIntAttribute(xmldoc, path, attrname) == -2);
+		path.pop_back();
+		path.push_back("stringattr");
+		REQUIRE(readStringAttribute(xmldoc, path, attrname) == "This is a string.");
+		path.pop_back();
+		path.push_back("boolattr");
+		REQUIRE(readBoolAttribute(xmldoc, path, "attr1") == true);
+		REQUIRE(readBoolAttribute(xmldoc, path, "attr2") == true);
+		REQUIRE(readBoolAttribute(xmldoc, path, "attr3") == false);
+		REQUIRE(readBoolAttribute(xmldoc, path, "attr4") == false);
+		path.pop_back();
+		path.push_back("filenameattr");
+		REQUIRE(readAndCheckFileNameAttribute(xmldoc, path, "exists") == "testga.xml");
+		REQUIRE_THROWS_AS(readAndCheckFileNameAttribute(xmldoc, path, "doesntexist"), ParseException);
+		// Make sure it's the right exception type
+		try{readAndCheckFileNameAttribute(xmldoc, path, "doesntexist");}
+		catch(ParseException pe){REQUIRE(pe.pet == petNonexistentFile);}
 		// Check nonexistant attribute
 		attrname = "nothing";
 		REQUIRE_THROWS_AS(readDoubleAttribute(xmldoc, path, attrname), ParseException);
-    REQUIRE_THROWS_AS(readUnsignedAttribute(xmldoc, path, attrname), ParseException);
-    REQUIRE_THROWS_AS(readIntAttribute(xmldoc, path, attrname), ParseException);
-    REQUIRE_THROWS_AS(readStringAttribute(xmldoc, path, attrname), ParseException);
+		REQUIRE_THROWS_AS(readUnsignedAttribute(xmldoc, path, attrname), ParseException);
+		REQUIRE_THROWS_AS(readIntAttribute(xmldoc, path, attrname), ParseException);
+		REQUIRE_THROWS_AS(readStringAttribute(xmldoc, path, attrname), ParseException);
 		REQUIRE_THROWS_AS(readBoolAttribute(xmldoc, path, attrname), ParseException);
+		REQUIRE_THROWS_AS(readAndCheckFileNameAttribute(xmldoc, path, attrname), ParseException);
 	}
 	SECTION("Attributes, 1 node path")
 	{
@@ -180,12 +211,18 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		REQUIRE(readBoolAttribute(rootNode, "boolattr", "attr2") == true);
 		REQUIRE(readBoolAttribute(rootNode, "boolattr", "attr3") == false);
 		REQUIRE(readBoolAttribute(rootNode, "boolattr", "attr4") == false);
+		REQUIRE(readAndCheckFileNameAttribute(rootNode, "filenameattr", "exists") == "testga.xml");
+		REQUIRE_THROWS_AS(readAndCheckFileNameAttribute(rootNode, "filenameattr", "doesntexist"), ParseException);
+		// Make sure it's the right exception type
+		try{readAndCheckFileNameAttribute(rootNode, "filenameattr", "doesntexist");}
+		catch(ParseException pe){REQUIRE(pe.pet == petNonexistentFile);}
 		// Check nonexistant node
 		REQUIRE_THROWS_AS(readDoubleAttribute(rootNode, "doubleattr", "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readUnsignedAttribute(rootNode, "doubleattr", "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readIntAttribute(rootNode, "doubleattr", "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readStringAttribute(rootNode, "doubleattr", "nothing"), ParseException);
 		REQUIRE_THROWS_AS(readBoolAttribute(rootNode, "doubleattr", "nothing"), ParseException);
+		REQUIRE_THROWS_AS(readAndCheckFileNameAttribute(xmldoc, "doubleattr", "nothing"), ParseException);
 	}
 	SECTION("Attributes, direct node")
 	{
@@ -203,6 +240,12 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		REQUIRE(readBoolAttribute(pcdnode, "attr2") == true);
 		REQUIRE(readBoolAttribute(pcdnode, "attr3") == false);
 		REQUIRE(readBoolAttribute(pcdnode, "attr4") == false);
+		pcdnode = rootNode.child("filenameattr");
+		REQUIRE(readAndCheckFileNameAttribute(pcdnode, "exists") == "testga.xml");
+		REQUIRE_THROWS_AS(readAndCheckFileNameAttribute(pcdnode, "doesntexist"), ParseException);
+		// Make sure it's the right exception type
+		try{readAndCheckFileNameAttribute(pcdnode, "doesntexist");}
+		catch(ParseException pe){REQUIRE(pe.pet == petNonexistentFile);}
 		// Check nonexistant node
 		pcdnode = rootNode.child("doubleattr");
 		attrname = "nothing";
@@ -212,6 +255,7 @@ TEST_CASE("Testing wrapper functions for PugiXML","[PugiXMLWrapper]")
 		REQUIRE_THROWS_AS(readIntAttribute(pcdnode, attrname), ParseException);
 		REQUIRE_THROWS_AS(readStringAttribute(pcdnode, attrname), ParseException);
 		REQUIRE_THROWS_AS(readBoolAttribute(pcdnode, attrname), ParseException);
+		REQUIRE_THROWS_AS(readAndCheckFileNameAttribute(pcdnode, attrname), ParseException);
 	}
 	SECTION("Node path")
 	{

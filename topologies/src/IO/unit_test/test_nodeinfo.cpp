@@ -45,7 +45,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testpix.xml");
 		REQUIRE(testRNI.getType() == tortPixel);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -71,7 +71,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testpix.xml");
 		REQUIRE(testRNI.getType() == tortVoxel);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -84,7 +84,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testpix.xml");
 		REQUIRE(testRNI.getType() == tortHeaviside3D);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -97,7 +97,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testcsg.xml");
 		REQUIRE(testRNI.getType() == tortCSG2D);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -110,7 +110,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testcsg.xml");
 		REQUIRE(testRNI.getType() == tortCSG3D);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -123,7 +123,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testmesh2d.xml");
 		REQUIRE(testRNI.getType() == tortMesh2D);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -136,7 +136,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testmesh2d.xml");
 		REQUIRE(testRNI.getType() == tortMesh3D);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -149,7 +149,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testmesh2d.xml");
 		REQUIRE(testRNI.getType() == tortHeavisideMesh2D);
 	}
 	rootNode = rootNode.next_sibling("representation");
@@ -162,7 +162,7 @@ TEST_CASE("Testing RepNodeInfo class","[RepNodeInfo]")
 		std::vector<std::string> path = testRNI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "representation");
-		REQUIRE(testRNI.getFileName() == "test.xml");
+		REQUIRE(testRNI.getFileName() == "testmesh2d.xml");
 		REQUIRE(testRNI.getType() == tortHeavisideMesh3D);
 	}
 }
@@ -186,7 +186,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testtoo.xml");
 		REQUIRE(testONI.getType() == tootOC);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -212,7 +212,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testtoo.xml");
 		REQUIRE(testONI.getType() == tootBFGS);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -225,7 +225,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testga.xml");
 		REQUIRE(testONI.getType() == tootGA);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -238,7 +238,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testga.xml");
 		REQUIRE(testONI.getType() == tootPGA);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -251,7 +251,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testtoo.xml");
 		REQUIRE(testONI.getType() == tootGD);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -264,7 +264,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testchain.xml");
 		REQUIRE(testONI.getType() == tootChain);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -277,7 +277,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testtoo.xml");
 		REQUIRE(testONI.getType() == tootRefine);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -290,7 +290,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testtoo.xml");
 		REQUIRE(testONI.getType() == tootConvert);
 	}
 	rootNode = rootNode.next_sibling("optimizer");
@@ -303,7 +303,7 @@ TEST_CASE("Testing OptNodeInfo classes","[RepNodeInfo]")
 		std::vector<std::string> path = testONI.getPath();
 		REQUIRE(path.size() == 1);
 		REQUIRE(path[0] == "optimizer");
-		REQUIRE(testONI.getFileName() == "test.xml");
+		REQUIRE(testONI.getFileName() == "testchain.xml");
 		REQUIRE(testONI.getType() == tootContinuation);
 	}
 }

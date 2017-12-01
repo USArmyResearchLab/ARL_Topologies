@@ -29,7 +29,7 @@
 
 <heavisidemesh2d tag="rep2">
 	<file_format>exodusii</file_format>
-	<file_name>test.txt</file_name>
+	<file_name>testquad.txt</file_name>
 	<heaviside_beta>1.</heaviside_beta>
 	<filter_radius>2.</filter_radius>
 	<fixed_block block_id="2" value="1."/>
@@ -38,7 +38,7 @@
 
 <mesh3d tag="rep3">
   <file_format>stl</file_format>
-  <file_name>test.txt</file_name>
+  <file_name>cube.stl</file_name>
 	<mesh_parameters dim="3">
     <tet_mesh_edge_size>1.</tet_mesh_edge_size>
     <tet_mesh_facet_angle>2.</tet_mesh_facet_angle>
@@ -51,5 +51,5 @@
 
 <heavisidemesh3d tag="rep4">
   <file_format>exodusii</file_format>
-  <file_name>test.txt</file_name>
+  <file_name>testhex.txt</file_name>
 </heavisidemesh3d>

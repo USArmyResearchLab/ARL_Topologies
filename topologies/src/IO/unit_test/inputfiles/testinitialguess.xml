@@ -13,5 +13,5 @@
   <noise_max>6.</noise_max>
 </initial_guess3>
 <initial_guess4 type="file">
-	<file_name>testfile.txt</file_name>
+	<file_name>testhex.txt</file_name>
 </initial_guess4>

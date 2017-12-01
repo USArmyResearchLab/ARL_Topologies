@@ -105,6 +105,8 @@ namespace HelperNS
 	private:
 		std::pair<double, double> randRange;
 	};
+	//! Checks if file with file name @param fileName is readable
+	bool isFileReadable(std::string const& fileName);
 	//! Round to the nearest integer.
 	int round(Real x);
 	//! Round to the nearest unsigned integer.
