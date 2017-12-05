@@ -487,16 +487,16 @@ void Mesh2D::reorderRCM()
 		std::list<Point2D*>::iterator pPtList = curLevelSet.begin();
 		for(; pPtList != curLevelSet.end(); ++pPtList)
 		{
-			vector<ElemEdge<Point2D>*> edgeVec;
+			vector<ElemEdge<Point2D>*> neighborEdgeVec;
 			Point2D* curPt = *pPtList;
-			getNeighboringEdges(curPt, edgeVec);
-			for(std::size_t k = 0; k < edgeVec.size(); k++)
+			getNeighboringEdges(curPt, neighborEdgeVec);
+			for(std::size_t k = 0; k < neighborEdgeVec.size(); k++)
 			{
 				Point2D* neighborPt;
-				if(edgeVec[k]->node0() == curPt)
-					neighborPt = edgeVec[k]->node1();
+				if(neighborEdgeVec[k]->node0() == curPt)
+					neighborPt = neighborEdgeVec[k]->node1();
 				else
-					neighborPt = edgeVec[k]->node0();
+					neighborPt = neighborEdgeVec[k]->node0();
 
 				int neighborID = findNode(neighborPt);
 				if(!nodeMarkList[neighborID])
@@ -549,12 +549,12 @@ int Mesh2D::getNodeDegree(Point2D* tstPt)
 	return degree;
 }
 
-void Mesh2D::getNeighboringEdges(Point2D* tstPt, vector<ElemEdge<Point2D>*>& edgeVec)
+void Mesh2D::getNeighboringEdges(Point2D* tstPt, vector<ElemEdge<Point2D>*>& neighborEdgeVec)
 {
 	for(std::size_t k = 0; k < numEdges; k++)
 	{
 		if(edgeVec[k]->node0() == tstPt || edgeVec[k]->node1() == tstPt)
-			edgeVec.push_back(edgeVec[k]);
+			neighborEdgeVec.push_back(edgeVec[k].get());
 	}
 }
 

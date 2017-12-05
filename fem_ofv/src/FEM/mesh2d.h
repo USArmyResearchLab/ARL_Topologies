@@ -138,7 +138,7 @@ public:
 	//! Fills inPtVec with all nodes 
 	void makeNodeVec(std::vector<Point2D*>& inPtVec) const;
 	//! Fills edgeVec will all edges connected to tstPt
-	void getNeighboringEdges(Point2D* tstPt, std::vector<ElemEdge<Point2D>*>& edgeVec);
+	void getNeighboringEdges(Point2D* tstPt, std::vector<ElemEdge<Point2D>*>& neighborEdgeVec);
 private:
 	std::size_t numElements, numEdges, numNodes;
 	std::size_t numInternalEdges, numBoundaryEdges, numUnk;
