@@ -1,18 +1,18 @@
 /*
- *  This file is part of Topologies.
+ * ARL_Topologies - An extensible topology optimization program
  *
- *  Topologies is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Written in 2017 by Raymond A. Wildman <raymond.a.wildman.civ@mail.mil>
+ * This project constitutes a work of the United States Government and is not
+ * subject to domestic copyright protection under 17 USC Sec. 105.
+ * Release authorized by the US Army Research Laboratory
  *
- *  Topologies is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * To the extent possible under law, the author(s) have dedicated all copyright
+ * and related and neighboring rights to this software to the public domain
+ * worldwide. This software is distributed without any warranty.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Topologies.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the CC0 Public Domain Dedication along
+ * with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ *
  */
 
 // Questions?
