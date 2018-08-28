@@ -75,7 +75,7 @@ enum TimeUnits {tuTimeSteps, tuSeconds, tuMilliSeconds, tuMicroSeconds, tuNanoSe
 //! An enumeration for defining spatial units
 enum SpaceUnits {suXSteps, suYSteps, suZSteps, suKilometers, suMeters, suCentimeters, suMillimeters, suMicrometers, suNanometers, suPicometers};
 //! Function evaluation type, either objective function, constraint, gradient, or constraint gradient
-enum EvalFunction{efF, efC, efG, efGC};
+enum EvalFunction{efF, efC, efG, efFandG, efGC};
 //! A data structure holding discretization parameters for space and time, and whether or not they have been set
 struct DiscretizationParameters
 {

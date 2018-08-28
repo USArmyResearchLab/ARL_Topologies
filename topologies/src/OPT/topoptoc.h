@@ -43,7 +43,6 @@ public:
 private:
 	double ocUpdate(std::vector<double>& x, const std::vector<double>& g, TopOptRep& toRep);
 	void computeGradient(const std::vector<double>& x, std::vector<double>& g, TopOptRep& workTOR);
-	void filterGradient(const std::vector<double>& x, std::vector<double>& locGrad, TopOptRep& workTOR) const;
 	void chainRule(const std::vector<double>& x, std::vector<double>& locGrad) const;
 
 	double filterSize, minDensity, stopTol;

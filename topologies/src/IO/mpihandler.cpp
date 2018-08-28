@@ -34,10 +34,12 @@
 #define FLAG_CE_ST 5
 #define FLAG_GE_ST 6
 #define FLAG_GCE_ST 7
-#define FLAG_FE_MT 8 // Multi-threaded
-#define FLAG_CE_MT 9
-#define FLAG_GE_MT 10
-#define FLAG_GCE_MT 11
+#define FLAG_FANDG_ST 8
+#define FLAG_FE_MT 9 // Multi-threaded
+#define FLAG_CE_MT 10
+#define FLAG_GE_MT 11
+#define FLAG_GCE_MT 12
+#define FLAG_FANDG_MT 13
 
 namespace Topologies{
 #ifdef USE_MPI
@@ -656,6 +658,8 @@ EvalFunction MPIHandler::convertFlagToEF(unsigned flag) const
 		return efG;
 	else if(flag == FLAG_GCE_ST || flag == FLAG_GCE_MT)
 		return efGC;
+	else if(flag == FLAG_FANDG_ST || flag == FLAG_FANDG_MT)
+		return efFandG;
 	return efF; // Default case
 }
 
@@ -669,6 +673,8 @@ unsigned MPIHandler::convertEFToFlag(EvalFunction inEF, bool isST) const
 		return isST ? FLAG_GE_ST : FLAG_GE_MT;
 	else if(inEF == efGC)
 		return isST ? FLAG_GCE_ST : FLAG_GCE_MT;
+	else if(inEF == efFandG)
+		return isST ? FLAG_FANDG_ST : FLAG_FANDG_MT;
 	return FLAG_FE_ST; // default case
 }
 
@@ -679,13 +685,13 @@ bool MPIHandler::evalFuncIsGradient(EvalFunction inEF) const
 
 bool MPIHandler::flagIsEvaluation(unsigned flag) const
 {
-	return flag == FLAG_FE_ST || flag == FLAG_CE_ST || flag == FLAG_GE_ST || flag == FLAG_GCE_ST ||
-					flag ==	FLAG_FE_MT || flag == FLAG_CE_MT || flag == FLAG_GE_MT || flag == FLAG_GCE_MT;
+	return flag == FLAG_FE_ST || flag == FLAG_CE_ST || flag == FLAG_GE_ST || flag == FLAG_GCE_ST || flag == FLAG_FANDG_ST ||
+					flag ==	FLAG_FE_MT || flag == FLAG_CE_MT || flag == FLAG_GE_MT || flag == FLAG_GCE_MT || flag == FLAG_FANDG_MT;
 }
 
 bool MPIHandler::isEvalSingleThreaded(unsigned flag) const
 {
-	return flag == FLAG_FE_ST || flag == FLAG_CE_ST || flag == FLAG_GE_ST || flag == FLAG_GCE_ST;
+	return flag == FLAG_FE_ST || flag == FLAG_CE_ST || flag == FLAG_GE_ST || flag == FLAG_GCE_ST || flag == FLAG_FANDG_ST;
 }
 
 #else
@@ -731,7 +737,7 @@ void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
 	rootBatchEvaluate(TORvec, resVec, inef);
 }
 
-std::pair<std::vector<double>, bool> MPIHandler::rootEvaluateTOR(TopOptRep* pTOR, EvalFunction inef)
+std::pair<std::vector<double>, bool> MPIHandler::rootEvaluateTOR(const TopOptRep* pTOR, EvalFunction inef)
 {
 	std::pair<std::vector<double>, bool> res;
 	rootBatchEvaluate({pTOR}, resVec, inef);
@@ -791,6 +797,15 @@ std::pair<std::vector<double>, bool> MPIHandler::evaluate(const TopOptRep* pTOR,
 		myTOOF->c(*pTOR, result);
 	else if(inef == efG)
 		myTOOF->g(*pTOR, result);
+	else if(inef == efFandG)
+	{
+		std::pair<std::vector<double>, bool> gRes;
+		myTOOF->fAndG(*pTOR, result, gRes);
+		// Append the vectors and set error flag
+		result.first.reserve(result.first.size() + gRes.first.size());
+		result.first.insert(result.first.end(), gRes.first.begin(), gRes.first.end());
+		result.second &= gRes.second;
+	}
 	else // gc
 		myTOOF->gc(*pTOR, result);
 	return result;
@@ -810,6 +825,15 @@ std::pair<std::vector<double>, bool> MPIHandler::evaluate(const TopOptRep* pTOR,
 		myTOOF->c(*pTOR, result, inComm);
 	else if(inef == efG)
 		myTOOF->g(*pTOR, result, inComm);
+	else if(inef == efFandG)
+	{
+		std::pair<std::vector<double>, bool> gRes;
+		myTOOF->fAndG(*pTOR, result, gRes, inComm);
+		// Append the vectors and set error flag
+		result.first.reserve(result.first.size() + gRes.first.size());
+		result.first.insert(result.first.end(), gRes.first.begin(), gRes.first.end());
+		result.second &= gRes.second;
+	}
 	else // efGC
 		myTOOF->gc(*pTOR, result, inComm);
 	return result;

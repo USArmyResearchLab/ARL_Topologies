@@ -120,6 +120,13 @@ void TopOptNLOpt::computeGradient(const std::vector<double>& x, std::vector<doub
 {
 	setTOR(x);
 	std::pair<std::vector<double>, bool> resG = evaluateGradient(workTOR.get());
+	g = std::move(resG.first);
+	addGradientConstraints(g, curc);
+	filterGradient(x, g, *workTOR, filterSize, minDensity);
+}
+
+void TopOptNLOpt::addGradientConstraints(std::vector<double>& resG, double curc) const
+{
 	if(!useConstraints)
 	{
 		// Compute penalty function gradient
@@ -128,12 +135,9 @@ void TopOptNLOpt::computeGradient(const std::vector<double>& x, std::vector<doub
 		if(curc < 0.)
 			fact = 0.;
 //			fact *= -1.;
-		for(std::size_t k = 0; k < resG.first.size(); ++k)
-			resG.first[k] += fact*curgc.first[k];
+		for(std::size_t k = 0; k < resG.size(); ++k)
+			resG[k] += fact*curgc.first[k];
 	}
-	// Apply gradient filter
-	filterGradient(x, resG.first);
-	g = std::move(resG.first);
 }
 
 double TopOptNLOpt::nloptOFWrapper(const std::vector<double>& x, std::vector<double>& grad, void* data)
@@ -145,7 +149,32 @@ double TopOptNLOpt::nloptOFWrapper(const std::vector<double>& x, std::vector<dou
 double TopOptNLOpt::f(const std::vector<double>& x, std::vector<double>& grad) const
 {
 	setTOR(x);
-	std::pair<double, bool> curf = evaluateSingleObjective(workTOR.get(), efF);
+	double curf;
+	if(!grad.empty())
+	{
+		std::tuple<double, std::vector<double>, bool> res = evaluateSingleObjectiveAndGradient(workTOR.get(), efFandG);
+		curf = std::get<0>(res);
+		grad = std::move(std::get<1>(res));
+	}
+	else
+	{
+		std::pair<double, bool> res = evaluateSingleObjective(workTOR.get(), efF);
+		curf = res.first;
+	}
+	double c0 = addConstraints(curf);
+	if(!grad.empty())
+	{
+		addGradientConstraints(grad, c0);
+		filterGradient(x, grad, *workTOR, filterSize, minDensity);
+	}
+	std::cout << curiter << ": Obj fun val: " << curf << std::endl;
+	handleOutput(workTOR.get());
+	return curf;
+}
+
+double TopOptNLOpt::addConstraints(double& curf) const
+{
+	// Add constraints if necessary
 	double c0 = 0.;
 	if(!useConstraints)
 	{
@@ -157,16 +186,11 @@ double TopOptNLOpt::f(const std::vector<double>& x, std::vector<double>& grad) c
 			if(curc.first[k] > 0.) // Inequality constraint
 				addTerm += pow(curc.first[k], penaltyPower)*constraintPenalty;
 		}
-		curf.first += addTerm;
+		curf += addTerm;
 		if(!curc.first.empty())
 			c0 = curc.first[0];
 	}
-	// Compute gradient
-	if(!grad.empty())
-		computeGradient(x, grad, c0);
-	std::cout << curiter << ": Obj fun val: " << curf.first << std::endl;
-	handleOutput(workTOR.get());
-	return curf.first;
+	return c0;
 }
 
 double TopOptNLOpt::nloptConstraintWrapper(const std::vector<double>& x, std::vector<double>& grad, void* data)
@@ -199,29 +223,5 @@ void TopOptNLOpt::setTOR(const std::vector<double>& x) const
   workTOR->setRealRep(x);
 }
 
-void TopOptNLOpt::filterGradient(const std::vector<double>& x, std::vector<double>& locGrad) const
-{
-	if(filterSize > 0.)
-	{
-		// Dot multiply gradient and x
-		std::vector<double> workVec(locGrad.size());
-		for(std::size_t k = 0; k < locGrad.size(); ++k)
-		{
-			if(x[k] < minDensity)
-				workVec[k] = locGrad[k]*minDensity;
-			else
-				workVec[k] = locGrad[k]*x[k];
-		}
-		workTOR->filterData(workVec, filterSize);
-		// Normalize
-		for(std::size_t k = 0; k < locGrad.size(); ++k)
-		{
-			if(x[k] < minDensity)
-				locGrad[k] = workVec[k]/minDensity;
-			else
-				locGrad[k] = workVec[k]/x[k];
-		}
-	}
-}
 }
 

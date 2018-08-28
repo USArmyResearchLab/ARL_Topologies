@@ -58,11 +58,14 @@ std::unique_ptr<TopOptRep> TopOptOC::optimize(const TopOptRep& initialGuess)
 	{
 		++curIter;
 		result->setRealRep(x);
-		std::pair<double, bool> curf = evaluateSingleObjective(result.get(), efF);
-		std::vector<double> g(x.size(), 0.);
-		computeGradient(x, g, *result);
+		std::tuple<double, std::vector<double>, bool> fAndG = evaluateSingleObjectiveAndGradient(result.get(), efFandG);
+//		std::pair<double, bool> curf = evaluateSingleObjective(result.get(), efF);
+		std::vector<double> g = std::move(std::get<1>(fAndG));
+//		computeGradient(x, g, *result);
+		filterGradient(x, g, *result, filterSize, minDensity);
 		curTol = ocUpdate(x, g, *result);
-		std::cout << "Done iteration #" << curIter << ", current ofv: " << curf.first << ", Norm of gradient: " << HelperNS::norm(g) 
+		std::cout << "Done iteration #" << curIter << ", current ofv: " << std::get<0>(fAndG) 
+							<< ", Norm of gradient: " << HelperNS::norm(g) 
 							<< ", change: " << curTol << std::endl;
 		std::cout << "  volume fraction: " << result->computeVolumeFraction() << std::endl;
 		result->setRealRep(x);
@@ -81,7 +84,7 @@ void TopOptOC::computeGradient(const std::vector<double>& x, std::vector<double>
 	workTOR.setRealRep(x);
 	std::pair<std::vector<double>, bool> resG = evaluateGradient(&workTOR);
 	// Apply gradient filter
-	filterGradient(x, resG.first, workTOR);
+	filterGradient(x, resG.first, workTOR, filterSize, minDensity);
 	// Copy to g
 	g = std::vector<double>(resG.first);
 }
@@ -124,30 +127,5 @@ double TopOptOC::ocUpdate(std::vector<double>& x, const std::vector<double>& g, 
 	return maxChange;
 }
 
-void TopOptOC::filterGradient(const std::vector<double>& x, std::vector<double>& locGrad, 
-																TopOptRep& workTOR) const
-{
-	if(filterSize > 0.)
-	{
-		// Dot multiply gradient and x
-		std::vector<double> workVec(locGrad.size());
-		for(std::size_t k = 0; k < locGrad.size(); ++k)
-		{
-			if(x[k] < minDensity)
-				workVec[k] = locGrad[k]*minDensity;
-			else
-				workVec[k] = locGrad[k]*x[k];
-		}
-		workTOR.filterData(workVec, filterSize);
-		// Normalize
-		for(std::size_t k = 0; k < locGrad.size(); ++k)
-		{
-			if(x[k] < minDensity)
-				locGrad[k] = workVec[k]/minDensity;
-			else
-				locGrad[k] = workVec[k]/x[k];
-		}
-	}
-}
 }
 

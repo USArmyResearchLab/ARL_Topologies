@@ -194,6 +194,7 @@ void TopOptObjFun::centeredDiff(const TopOptRep& inTOR, std::pair<std::vector<do
 
 void TopOptObjFun::gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const
 {
+	std::cout << "In serial gc" << std::endl;
 	// Default finite difference approximation
 	std::vector<double> y;
 	inTOR.getRealRep(y);
@@ -249,5 +250,20 @@ void TopOptObjFun::computeGradient(EvalFunction inEF, const TopOptRep& inTOR, st
 	else
 		locMPIH.slaveWaitAndProcessFlag();
 }
+
+void TopOptObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
+												std::pair<std::vector<double>, bool>& gRes) const
+{
+	this->f(inTOR, fRes);
+	this->g(inTOR, gRes);
+}
+
+void TopOptObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
+													std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const
+{
+	this->f(inTOR, fRes, communicator);
+	this->g(inTOR, gRes, communicator);
+}
+
 }
 

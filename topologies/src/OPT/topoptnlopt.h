@@ -54,9 +54,10 @@ private:
 	double f(const std::vector<double> &x, std::vector<double> &grad) const;
 	double c(const std::vector<double> &x, std::vector<double> &grad) const;
 	// Utility functions needed for above
+	double addConstraints(double& curf) const;
+	void addGradientConstraints(std::vector<double>& resG, double curc) const;
   void computeGradient(const std::vector<double>& x, std::vector<double>& g, double curc) const;
 	void computeGradientC(const std::vector<double>& x, std::vector<double>& g) const;
-  void filterGradient(const std::vector<double>& x, std::vector<double>& locGrad) const;
   void setTOR(const std::vector<double>& x) const;
 	// Data
 	TOOType myTOOT;

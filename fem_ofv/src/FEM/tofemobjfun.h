@@ -52,6 +52,9 @@ public:
   virtual void g(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
 	//! Computes the gradient of the constraints
 	virtual void gc(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
+	//! Computes the gradient and the objective function value
+	virtual void fAndG(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
+											std::pair<std::vector<double>, bool>& gRes) const; 
 #ifdef USE_MPI
 	//! This overloaded parentheses operator takes an MPI communicator for parallelized objective functions, though it is not implemented here.
 	virtual std::pair<double, bool> operator()(const Topologies::TopOptRep& inTOR, MPI::Comm& communicator) const;
@@ -63,6 +66,9 @@ public:
   virtual void g(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
 	//! Computes the gradient of the constraints
   virtual void gc(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
+	//! Computes the gradient and the objective function
+	virtual void fAndG(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
+											std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const;
 #endif
 private:
 	std::vector<ExoBC> generateExoBCVec(const Topologies::TOMesh* const inMesh, std::size_t kLoad) const;

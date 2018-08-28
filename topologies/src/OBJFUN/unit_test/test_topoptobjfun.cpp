@@ -32,6 +32,7 @@ TEST_CASE("Testing TopOptObjFun finite difference gradient with test derived cla
 	// Set up PixelRep
 	std::vector<std::vector<int>> discreteParams(2);
 	int nx = 10, ny = 10;
+	double vol = (1./(double)nx)*(1./(double)ny);
 	discreteParams[0] = {nx, ny, metQuad}; // nx, ny, MeshElementType
 	VolMeshTORSpecification tmpVMTORS(tortPixel);
 	discreteParams[1] = tmpVMTORS.toVec();
@@ -45,6 +46,7 @@ TEST_CASE("Testing TopOptObjFun finite difference gradient with test derived cla
 	testOF.printResult(testPR, "filename"); // run printResult
 	SECTION("f and c")
 	{
+		std::cout << "f and c" << std::endl;
 		std::pair<double, bool> res = testOF(testPR);
 		REQUIRE(res.first == Approx(0.5));
 		REQUIRE(res.second);
@@ -60,18 +62,32 @@ TEST_CASE("Testing TopOptObjFun finite difference gradient with test derived cla
 	}
 	SECTION("Gradient of f")
 	{
+		std::cout << "Gradient of f" << std::endl;
 		std::pair<std::vector<double>, bool> outRes;
 		testOF.g(testPR, outRes);
-		double vol = (1./(double)nx)*(1./(double)ny);
 		for(auto oit = outRes.first.begin(); oit != outRes.first.end(); ++oit)
 			REQUIRE(*oit == Approx(vol));
 	}
 	SECTION("Gradient of c")
 	{
+		std::cout << "Gradient of c" << std::endl;
 		std::pair<std::vector<double>, bool> outRes;
 		testOF.gc(testPR, outRes);
-		double vol = (1./(double)nx)*(1./(double)ny);
 		for(auto oit = outRes.first.begin(); oit != outRes.first.end(); ++oit)
 			REQUIRE(*oit == Approx(vol));
 	}
+	SECTION("f and grad f")
+	{
+		std::cout << "f and grad f" << std::endl;
+		std::pair<std::vector<double>, bool> fRes, gRes;
+		testOF.fAndG(testPR, fRes, gRes);
+		// f
+		REQUIRE(fRes.first.size() == 1);
+		REQUIRE(fRes.first[0] == Approx(0.5));
+		REQUIRE(fRes.second);
+		// g
+		for(auto oit = gRes.first.begin(); oit != gRes.first.end(); ++oit)
+			REQUIRE(*oit == Approx(vol));
+	}
 }
+

@@ -24,6 +24,7 @@
 #include "inputloaderopt.h"
 #include "outputhandler.h"
 #include <vector>
+#include <tuple>
 
 namespace Topologies{
 class MPIHandler;
@@ -56,6 +57,10 @@ protected:
 	std::pair<double, bool> evaluateSingleObjective(const TopOptRep* pTOR, EvalFunction inef = efF) const;
 	std::pair<std::vector<double>, bool> evaluateMultiObjective(const TopOptRep* pTOR, EvalFunction inef = efF) const; 
 	std::pair<std::vector<double>, bool> evaluateGradient(const TopOptRep* pTOR, EvalFunction inef = efG) const;
+	std::tuple<double, std::vector<double>, bool> evaluateSingleObjectiveAndGradient(const TopOptRep* pTOR, 
+																																										EvalFunction inef = efFandG) const;
+	void filterGradient(const std::vector<double>& x, std::vector<double>& locGrad,
+											TopOptRep& workTOR, double filterSize, double minDensity) const;
 	void handleOutput(const TopOptRep* const torToPrint) const;
 
 	MPIHandler* pMPIH;

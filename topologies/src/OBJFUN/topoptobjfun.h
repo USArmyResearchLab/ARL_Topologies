@@ -63,6 +63,12 @@ public:
 	 *  finite difference method and this should be overrided in an implemenation if possible.
 	 */ 
 	virtual void g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
+	//! Computes the objective function value (stored in @param fRes) and gradient (stored in @param gRes)
+	/*! Evaluates both the objective function and its gradient, useful for self-adjoint problems that
+	 *  efficiently compute both simultaneously.  If not overridden, will simply call f and g separately. 
+	 */
+	virtual void fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes, 
+											std::pair<std::vector<double>, bool>& gRes) const;
 	//! Computes the constraint values for a given TopOptRep
 	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const = 0;
 	//! Computes the gradient of the constraint function with respect to all design variables in the TopOptRep
@@ -84,6 +90,12 @@ public:
 	 *  an implemenation if possible.  The finite difference computation is parallelized.
 	 */
 	virtual void g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
+	//! Computes the objective function value (stored in @param fRes) and gradient (stored in @param gRes)
+	/*! Evaluates both the objective function and its gradient, useful for self-adjoint problems that
+	 *  efficiently compute both simultaneously.  If not overridden, will simply call f and g separately.
+	 */
+	virtual void fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
+										std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const;
 	//! Computes the constraint values for a given TopOptRep
 	/*! The MPI::Comm argument can be used to parallelize the objective function computation */
 	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const = 0;

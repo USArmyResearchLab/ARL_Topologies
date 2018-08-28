@@ -60,5 +60,57 @@ std::pair<std::vector<double>, bool> TopOpt::evaluateGradient(const TopOptRep* p
 	}
 	return resG;
 }
+
+std::tuple<double, std::vector<double>, bool> TopOpt::evaluateSingleObjectiveAndGradient(const TopOptRep* pTOR,
+																																												EvalFunction inef) const
+{
+	std::pair<std::vector<double>, bool> fRes, gRes;
+	if(pMPIH)
+	{
+		fRes = pMPIH->rootEvaluateTOR(pTOR, inef);
+		// Remove gradient
+		assert(fRes.size() > pTOR->getDataSize());
+		gRes.first.insert(gRes.first.end(), fRes.first.end() - pTOR->getDataSize(), fRes.first.end());
+		fRes.first.erase(fRes.first.end() - pTOR->getDataSize(), fRes.first.end());
+	}
+	else
+	{
+		if(inef == efFandG)
+			pObjFun->fAndG(*pTOR, fRes, gRes);
+		else
+			std::cout << "Warning: Computing C and its gradient not yet supported, use evaluateSingleObjective" << std::endl;
+	}
+	double fval = 1e6;
+	if(!fRes.first.empty())
+		fval = fRes.first[0];
+	return std::make_tuple(fval, gRes.first, fRes.second && gRes.second);
+}
+
+void TopOpt::filterGradient(const std::vector<double>& x, std::vector<double>& locGrad,
+															TopOptRep& workTOR, double filterSize, double minDensity) const
+{
+	if(filterSize > 0.)
+	{
+		// Dot multiply gradient and x
+		std::vector<double> workVec(locGrad.size());
+		for(std::size_t k = 0; k < locGrad.size(); ++k)
+		{
+			if(x[k] < minDensity)
+				workVec[k] = locGrad[k]*minDensity;
+			else
+				workVec[k] = locGrad[k]*x[k];
+		}
+		workTOR.filterData(workVec, filterSize);
+		// Normalize
+		for(std::size_t k = 0; k < locGrad.size(); ++k)
+		{
+			if(x[k] < minDensity)
+				locGrad[k] = workVec[k]/minDensity;
+			else
+				locGrad[k] = workVec[k]/x[k];
+		}
+	}
+}
+
 }
 

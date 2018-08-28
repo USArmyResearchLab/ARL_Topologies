@@ -46,7 +46,6 @@ public:
 private:
 	double gdUpdate(std::vector<double>& x, const std::vector<double>& g, double prevOFV, TopOptRep& workTOR);
 	void computeGradient(const std::vector<double>& x, std::vector<double>& g, TopOptRep& workTOR);
-	void filterGradient(const std::vector<double>& x, std::vector<double>& locGrad, TopOptRep& workTOR) const;
 
 	double filterSize, minDensity, stopTol, gamma, maxStep;
 	unsigned maxIters;

@@ -40,14 +40,20 @@ InputLoader::RepNodeInfo loadRNI(const std::string& fileName)
 
 void testGradient(TopOptRep& testTOR, TOFEMObjFun& testObjFun)
 {
-	std::pair<std::vector<double>, bool> res1, res2;
+	std::pair<std::vector<double>, bool> res1, res2, res3, fRes;
 	testObjFun.g(testTOR, res1);
+	testObjFun.fAndG(testTOR, fRes, res2);
 	REQUIRE(res1.second);
-	testObjFun.TopOptObjFun::g(testTOR, res2); //Calls finite difference version
 	REQUIRE(res2.second);
-	REQUIRE(res1.first.size() == res2.first.size());
+	testObjFun.TopOptObjFun::g(testTOR, res3); //Calls finite difference version
+	REQUIRE(res3.second);
+	REQUIRE(res1.first.size() == res3.first.size());
+	REQUIRE(res2.first.size() == res3.first.size());
 	for(std::size_t k = 0; k < res1.first.size(); ++k)
-		REQUIRE(res1.first[k] == Approx(res2.first[k]).epsilon(1e-3));
+	{
+		REQUIRE(res1.first[k] == Approx(res3.first[k]).epsilon(1e-3));
+		REQUIRE(res2.first[k] == Approx(res3.first[k]).epsilon(1e-3));
+	}
 }
 
 void testConstraintGradient(TopOptRep& testTOR, TOFEMObjFun& testObjFun)

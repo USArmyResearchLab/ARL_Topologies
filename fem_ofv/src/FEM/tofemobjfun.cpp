@@ -126,6 +126,44 @@ void TOFEMObjFun::g(const TopOptRep& inTOR, const std::vector<std::map<std::size
 	}
 }
 
+void TOFEMObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes, 
+												std::pair<std::vector<double>, bool>& gRes) const
+{
+	// First check that there's a valid representation derivative
+	std::vector<std::map<std::size_t, double>> dTOR = inTOR.diffRep();
+	if(dTOR.empty()) // No analytical derivative is available, use finite differences
+	{
+		f(inTOR, fRes);
+		TopOptObjFun::g(inTOR, gRes);
+	}
+	else
+	{
+		bool valid = true;
+		double fval = 0.;
+		gRes.first = std::vector<double>(dTOR.size(), 0.);
+		gRes.second = true;
+		std::unique_ptr<TOMesh> resMesh = getTOMesh(inTOR);
+		assert(resMesh);
+		for(std::size_t k = 0; k < lcVV.size() && valid; ++k)
+		{
+			// Loop over each load case and sum compliance
+			std::unique_ptr<FEMProblem> upFEM = setupAndSolveFEM(inTOR, k);
+			valid &= upFEM->validRun();
+			// f: objective function value
+			std::pair<double, bool> complianceRes = upFEM->computeCompliance();
+			fval += complianceRes.first;
+			// g: gradient of obj. fun 
+			gRes.first = HelperNS::vecSum(gRes.first, upFEM->gradCompliance(resMesh.get(), dTOR));
+		}
+		valid &= fval < maxDisplacement;
+		// Finish f, add volume fraction as second goal
+		fRes.first = {fval, inTOR.computeVolumeFraction()};
+		// Add valid flags
+		fRes.second = valid;
+		gRes.second = valid;
+	}
+}
+
 // Constraints
 void TOFEMObjFun::c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const
 {
@@ -176,6 +214,13 @@ void TOFEMObjFun::gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool
 		TopOptObjFun::gc(inTOR, outRes, communicator);
 	else
 		outRes = std::make_pair(std::move(dVF), true);
+}
+
+void TOFEMObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
+												std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const
+{
+	f(inTOR, fRes, communicator);
+	g(inTOR, gRes, communicator);
 }
 
 #endif

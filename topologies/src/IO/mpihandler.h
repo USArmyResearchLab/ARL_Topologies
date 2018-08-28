@@ -27,7 +27,6 @@
 #include <vector>
 #include <fstream>
 #include <memory>
-#include "cgal_types.h"
 #include "topologiesdefs.h"
 #include "topoptrep.h"
 
