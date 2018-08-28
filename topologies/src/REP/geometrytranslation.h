@@ -97,6 +97,8 @@ namespace GeometryTranslation
 	//! Orders an arbitrary collection of line segments into a set of well-defined polygons (if possible)
 	/*! Note: This uses an absolute tolerance. */
 	void orderMeshSegments(const std::vector<Mesh_Segment_2>& segVec, std::vector<std::vector<Mesh_Segment_2> >& orderedVecVec);
+	//! Fixes the orientation of a collection of polygons so that polygon vertices are in CCW order and holes are in CW order
+	void fixOrientation(std::vector<std::vector<Mesh_Segment_2>>& orderedVecVec);
 	//! Copies the nested vector representation of line segments (collection of polygons) to one vector
 	void flattenMeshSegments(const std::vector<std::vector<Mesh_Segment_2> >& orderedVec, std::vector<Mesh_Segment_2>& outSegVec);
 	//! Check that mesh segments represent a valid boundary, i.e. no segments connecting at 3 or more points
@@ -108,6 +110,9 @@ namespace GeometryTranslation
 	//! Converts a set of line segments into a CGAL polygon
 	void meshSegs2Polygon(const std::vector<Mesh_Segment_2>& inSegVec, CGAL::Polygon_2<Mesh_K>& outPoly);
 	//! Converts a set of line segments into several CGAL polygons: An outer boundary and any inner holes
+	/*! Note that this assumes that there is a single outer polygon with holes, not multiple polygons or
+   *  polygons embedded in holes.
+	 */
 	void meshSegs2PolygonWithHoles(const std::vector<Mesh_Segment_2>& inSegVec, CGAL::Polygon_2<Mesh_K>& outPoly, 
 																std::vector<CGAL::Polygon_2<Mesh_K> >& holeVec);
 	//! Converts a CGAL polygon into a vector of line segments

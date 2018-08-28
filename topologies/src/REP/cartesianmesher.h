@@ -21,7 +21,6 @@
 #ifndef CARTESIANMESHER
 #define CARTESIANMESHER
 
-#include "cgal_types.h"
 #include "tomesh.h"
 #include "inputloader.h"
 #include <vector>

@@ -257,10 +257,10 @@ TEST_CASE("Boundary mesh functions", "[GeometryTranslation]")
 			REQUIRE(segVV[1].size() == 4);
 			// The order could be different, so need to check first
 			double area0 = computeSignedArea(segVV[0]), area1 = computeSignedArea(segVV[1]);
-			if(area0 == Approx(0.01)) REQUIRE(area0 == Approx(0.01));
-			else REQUIRE(area0 == Approx(2.));
-			if(area1 == Approx(0.01)) REQUIRE(area1 == Approx(0.01));
-			else REQUIRE(area1 == Approx(2.));
+			if(area0 > area1)
+				std::swap(area0, area1);
+			REQUIRE(area0 == Approx(-0.01));
+			REQUIRE(area1 == Approx(2.));
 			// Test flatten
 			flattenMeshSegments(segVV, curVec);
 			REQUIRE(curVec.size() == 8);
@@ -271,9 +271,6 @@ TEST_CASE("Boundary mesh functions", "[GeometryTranslation]")
 		flattenMeshSegments(segVV, curVec);
 		REQUIRE(curVec.size() == 8);
 		// Check boundary validity
-		orderMeshSegments(curVec, segVV);
-		flattenMeshSegments(segVV, curVec);
-		REQUIRE(!checkValidityAsBoundaryMesh(curVec));
 		REQUIRE(checkValidityAsBoundaryMesh(segVV[0]));
 		REQUIRE(checkValidityAsBoundaryMesh(segVV[1]));
 		REQUIRE(checkValidityAsBoundaryMesh(segVec2));

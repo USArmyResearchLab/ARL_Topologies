@@ -34,6 +34,13 @@ namespace GeometryTranslation
 
 namespace // Anonymous namespace for helper functions
 {
+	bool isPtInPoly(std::vector<Mesh_Segment_2> const& segVec, Point_2_base const& pt)
+	{
+		CGAL::Polygon_2<Mesh_K> polygon;
+    meshSegs2Polygon(segVec, polygon);
+		return polygon.bounded_side(pt) == CGAL::ON_BOUNDED_SIDE;
+	}
+
 	std::vector<Mesh_Segment_2> getSegRep(unsigned nx, unsigned ny, double width, double height)
 	{
 		// Constraints are all box sides, just need to make sure we don't insert duplicates
@@ -660,48 +667,50 @@ void flattenMeshSegments(const std::vector<std::vector<Mesh_Segment_2> >& ordere
 
 void orderMeshSegments(const std::vector<Mesh_Segment_2>& segVec, std::vector<std::vector<Mesh_Segment_2> >& orderedVecVec)
 {
+	if(segVec.empty())
+		return;
 	vector<Mesh_Segment_2> unorderedVec = segVec;
 	orderedVecVec.clear();
-	if(segVec.size() != 0)
+	vector<Mesh_Segment_2> curRowVec;
+	orderedVecVec.push_back(curRowVec);
+	Uint curRow = 0;
+	orderedVecVec[curRow].push_back(unorderedVec.back());
+	unorderedVec.pop_back();
+	while(!unorderedVec.empty())
 	{
-		vector<Mesh_Segment_2> curRowVec;
-		orderedVecVec.push_back(curRowVec);
-		Uint curRow = 0;
-		orderedVecVec[curRow].push_back(unorderedVec.back());
-		unorderedVec.pop_back();
-		while(!unorderedVec.empty())
+		vector<Mesh_Segment_2>::iterator vit;
+		bool found = false, flip = false;
+		Point_2_base searchPt = orderedVecVec[curRow].back().target();
+		for(vit = unorderedVec.begin(); vit != unorderedVec.end() && !found; ++vit)
 		{
-			vector<Mesh_Segment_2>::iterator vit;
-			bool found = false, flip = false;
-			Point_2_base searchPt = orderedVecVec[curRow].back().target();
-			for(vit = unorderedVec.begin(); vit != unorderedVec.end() && !found; ++vit)
+			if(TOL_EQ(searchPt.x(), vit->source().x(), 1e-8) && TOL_EQ(searchPt.y(), vit->source().y(), 1e-8))
+				found = true;
+			else if(TOL_EQ(searchPt.x(), vit->target().x(), 1e-8) && TOL_EQ(searchPt.y(), vit->target().y(), 1e-8))
 			{
-				if(TOL_EQ(searchPt.x(), vit->source().x(), 1e-8) && TOL_EQ(searchPt.y(), vit->source().y(), 1e-8))
-					found = true;
-				else if(TOL_EQ(searchPt.x(), vit->target().x(), 1e-8) && TOL_EQ(searchPt.y(), vit->target().y(), 1e-8))
-				{
-					found = true;
-					flip = true;
-				}
-			}
-			if(found)
-			{
-				vit--;
-				Mesh_Segment_2 orderedSeg = *vit;
-				if(flip)
-					orderedSeg = orderedSeg.opposite();
-				orderedVecVec[curRow].push_back(orderedSeg);
-				unorderedVec.erase(vit);
-			}
-			else
-			{
-				vector<Mesh_Segment_2> newRow;
-				newRow.push_back(unorderedVec.back());
-				orderedVecVec.push_back(newRow);
-				curRow++;
-				unorderedVec.pop_back();
+				found = true;
+				flip = true;
 			}
 		}
+		if(found)
+		{
+			vit--;
+			Mesh_Segment_2 orderedSeg = *vit;
+			if(flip)
+				orderedSeg = orderedSeg.opposite();
+			orderedVecVec[curRow].push_back(orderedSeg);
+			unorderedVec.erase(vit);
+		}
+		else
+		{
+			vector<Mesh_Segment_2> newRow;
+			newRow.push_back(unorderedVec.back());
+			orderedVecVec.push_back(newRow);
+			curRow++;
+			unorderedVec.pop_back();
+		}
+	}
+	fixOrientation(orderedVecVec);
+/*
 		for(Uint k = 0; k < orderedVecVec.size(); ++k)
 		{
 			Real a = computeSignedArea(orderedVecVec[k]);
@@ -712,6 +721,38 @@ void orderMeshSegments(const std::vector<Mesh_Segment_2>& segVec, std::vector<st
 					*vit = vit->opposite();
 				std::reverse(orderedVecVec[k].begin(), orderedVecVec[k].end());
 			}
+		}*/
+}
+
+void fixOrientation(std::vector<std::vector<Mesh_Segment_2>>& orderedVecVec)
+{
+	// First determine if each polygon is a hole or not
+	// Determined by the number of other polygon's it resides in
+	std::vector<bool> isHole(orderedVecVec.size(), false);
+	for(std::size_t k1 = 0; k1 < orderedVecVec.size(); ++k1)
+	{
+		std::vector<Mesh_Segment_2> const& curPoly = orderedVecVec[k1];
+		if(curPoly.empty())
+			continue;
+		Point_2_base const curChkPt = curPoly.front().source();
+		for(std::size_t k2 = 0; k2 < orderedVecVec.size(); ++k2)
+		{
+			if(k1 == k2)
+				continue;
+			if(isPtInPoly(orderedVecVec[k2], curChkPt))
+				isHole[k1] = !isHole[k1];
+		}
+	}
+	// Flip order if necessary
+	for(std::size_t k = 0; k < orderedVecVec.size(); ++k)
+	{
+		Real a = computeSignedArea(orderedVecVec[k]);
+		if(isHole[k] == (a >= 0.)) // Flip
+		{
+			vector<Mesh_Segment_2>::iterator vit;
+			for(vit = orderedVecVec[k].begin(); vit != orderedVecVec[k].end(); ++vit)
+				*vit = vit->opposite();
+			std::reverse(orderedVecVec[k].begin(), orderedVecVec[k].end());
 		}
 	}
 }
