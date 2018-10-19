@@ -61,6 +61,8 @@ namespace InputLoader
 		catch(ParseException pe){}
 		try{maxIters = readUnsignedPCData(rootNode, "max_iterations");}
 		catch(ParseException pe){}
+		try{numConstraints = readUnsignedPCData(rootNode, "num_constraints");}
+		catch(ParseException pe){}
 	}
 	
 	void TOOGA::parse(const pugi::xml_document& xmldoc)

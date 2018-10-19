@@ -57,7 +57,7 @@ std::unique_ptr<TopOptRep> TopOptOC::optimize(const TopOptRep& initialGuess)
 	while(curTol > stopTol && curIter < maxIters)
 	{
 		++curIter;
-		result->setRealRep(x);
+		result->setRealRep(x.begin(), x.end());
 		std::tuple<double, std::vector<double>, bool> fAndG = evaluateSingleObjectiveAndGradient(result.get(), efFandG);
 //		std::pair<double, bool> curf = evaluateSingleObjective(result.get(), efF);
 		std::vector<double> g = std::move(std::get<1>(fAndG));
@@ -68,20 +68,20 @@ std::unique_ptr<TopOptRep> TopOptOC::optimize(const TopOptRep& initialGuess)
 							<< ", Norm of gradient: " << HelperNS::norm(g) 
 							<< ", change: " << curTol << std::endl;
 		std::cout << "  volume fraction: " << result->computeVolumeFraction() << std::endl;
-		result->setRealRep(x);
+		result->setRealRep(x.begin(), x.end());
 		handleOutput(result.get());
 	}
 	if(curIter >= maxIters)
 		std::cout << "Done: Max iterations exceeded, current iteration: " << curIter << std::endl;
 	if(curTol <= stopTol)
 		std::cout << "Done: Tolerance converged, current tolerance: " << curTol << std::endl;
-	result->setRealRep(x);
+	result->setRealRep(x.begin(), x.end());
 	return result;
 }
 
 void TopOptOC::computeGradient(const std::vector<double>& x, std::vector<double>& g, TopOptRep& workTOR)
 {
-	workTOR.setRealRep(x);
+	workTOR.setRealRep(x.begin(), x.end());
 	std::pair<std::vector<double>, bool> resG = evaluateGradient(&workTOR);
 	// Apply gradient filter
 	filterGradient(x, resG.first, workTOR, filterSize, minDensity);
@@ -103,7 +103,7 @@ double TopOptOC::ocUpdate(std::vector<double>& x, const std::vector<double>& g, 
 			xnew[k] = MAX(0., MAX(x[k] - move, MIN(1., MIN(x[k] + move, updateVal))));
 		}
 		// Recompute constraint
-		toRep.setRealRep(xnew);
+		toRep.setRealRep(xnew.begin(), xnew.end());
 		std::pair<double, bool> curc = evaluateSingleObjective(&toRep, efC);
 		double c = curc.first;
 		if(!curc.second)

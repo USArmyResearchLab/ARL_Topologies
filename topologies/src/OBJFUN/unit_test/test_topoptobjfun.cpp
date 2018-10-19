@@ -33,7 +33,7 @@ TEST_CASE("Testing TopOptObjFun finite difference gradient with test derived cla
 	std::vector<std::vector<int>> discreteParams(2);
 	int nx = 10, ny = 10;
 	double vol = (1./(double)nx)*(1./(double)ny);
-	discreteParams[0] = {nx, ny, metQuad}; // nx, ny, MeshElementType
+	discreteParams[0] = {nx, ny, metQuad, false}; // nx, ny, MeshElementType
 	VolMeshTORSpecification tmpVMTORS(tortPixel);
 	discreteParams[1] = tmpVMTORS.toVec();
 	std::vector<std::vector<double>> realParams(3);

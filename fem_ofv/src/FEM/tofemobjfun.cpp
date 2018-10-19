@@ -55,17 +55,10 @@ TOFEMObjFun::~TOFEMObjFun()
 {
 }
 
-std::unique_ptr<TOMesh> TOFEMObjFun::getTOMesh(const TopOptRep& inTOR) const
-{
-	if(dim == 2)
-		return inTOR.get2DMesh();
-	return inTOR.get3DVolumeMesh();
-}
-
 std::unique_ptr<FEMProblem> TOFEMObjFun::setupAndSolveFEM(const TopOptRep& inTOR, std::size_t kLoad) const
 {
 	// Set up mesh and fem problem
-	std::unique_ptr<TOMesh> resMesh = getTOMesh(inTOR);
+	std::unique_ptr<TOMesh> resMesh = inTOR.getAnalysisMesh();
 	assert(resMesh);
 	std::unique_ptr<FEMProblem> upProb(new FEMProblem(resMesh.get(), baseMat));
 	// Convert boundary conditions
@@ -103,26 +96,20 @@ void TOFEMObjFun::f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>
 
 void TOFEMObjFun::g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const
 {
-	std::vector<std::map<std::size_t, double>> dTOR = inTOR.diffRep();
-	if(dTOR.empty()) // No analytical derivative is available, use finite differences
+	if(!inTOR.hasAnalyticalDerivative()) // No analytical derivative is available, use finite differences
 		TopOptObjFun::g(inTOR, outRes);
 	else
-		g(inTOR, dTOR, outRes);
-}
-
-void TOFEMObjFun::g(const TopOptRep& inTOR, const std::vector<std::map<std::size_t, double>>& dTOR,
-    std::pair<std::vector<double>, bool>& outRes) const
-{
-	// Gradient consists of partial derivatives of inTOR multiplied by those of the FEM problem
-	outRes.first = std::vector<double>(dTOR.size(), 0.);
-	outRes.second = true;
-	for(std::size_t k = 0; k < lcVV.size() && outRes.second; ++k)
 	{
-		std::unique_ptr<FEMProblem> upFEM = setupAndSolveFEM(inTOR, k);
-		outRes.second &= upFEM->validRun();
-		std::unique_ptr<TOMesh> resMesh = getTOMesh(inTOR);
+		outRes.first = std::vector<double>(inTOR.getDataSize(), 0.);
+		outRes.second = true;
+		std::unique_ptr<TOMesh> resMesh = inTOR.getAnalysisMesh();
 		assert(resMesh);
-		outRes.first = HelperNS::vecSum(outRes.first, upFEM->gradCompliance(resMesh.get(), dTOR));
+		for(std::size_t k = 0; k < lcVV.size() && outRes.second; ++k)
+		{
+			std::unique_ptr<FEMProblem> upFEM = setupAndSolveFEM(inTOR, k);
+			outRes.second &= upFEM->validRun();
+			outRes.first = HelperNS::vecSum(outRes.first, inTOR.applyDiffRep(upFEM->gradCompliance(resMesh.get())));
+		}
 	}
 }
 
@@ -130,8 +117,7 @@ void TOFEMObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, b
 												std::pair<std::vector<double>, bool>& gRes) const
 {
 	// First check that there's a valid representation derivative
-	std::vector<std::map<std::size_t, double>> dTOR = inTOR.diffRep();
-	if(dTOR.empty()) // No analytical derivative is available, use finite differences
+	if(!inTOR.hasAnalyticalDerivative()) // No analytical derivative is available, use finite differences
 	{
 		f(inTOR, fRes);
 		TopOptObjFun::g(inTOR, gRes);
@@ -140,9 +126,9 @@ void TOFEMObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, b
 	{
 		bool valid = true;
 		double fval = 0.;
-		gRes.first = std::vector<double>(dTOR.size(), 0.);
+		gRes.first = std::vector<double>(inTOR.getDataSize(), 0.);
 		gRes.second = true;
-		std::unique_ptr<TOMesh> resMesh = getTOMesh(inTOR);
+		std::unique_ptr<TOMesh> resMesh = inTOR.getAnalysisMesh();
 		assert(resMesh);
 		for(std::size_t k = 0; k < lcVV.size() && valid; ++k)
 		{
@@ -153,7 +139,7 @@ void TOFEMObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, b
 			std::pair<double, bool> complianceRes = upFEM->computeCompliance();
 			fval += complianceRes.first;
 			// g: gradient of obj. fun 
-			gRes.first = HelperNS::vecSum(gRes.first, upFEM->gradCompliance(resMesh.get(), dTOR));
+			gRes.first = HelperNS::vecSum(gRes.first, inTOR.applyDiffRep(upFEM->gradCompliance(resMesh.get())));
 		}
 		valid &= fval < maxDisplacement;
 		// Finish f, add volume fraction as second goal
@@ -180,50 +166,6 @@ void TOFEMObjFun::gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool
 	else
 		outRes = std::make_pair(std::move(dVF), true);
 }
-
-#ifdef USE_MPI
-std::pair<double, bool> TOFEMObjFun::operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const
-{
-	// Not implemented
-	return (*this)(inTOR);
-}
-
-void TOFEMObjFun::f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	f(inTOR, outRes);
-}
-
-void TOFEMObjFun::c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	c(inTOR, outRes);
-}
-
-void TOFEMObjFun::g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	std::vector<std::map<std::size_t, double>> dTOR = inTOR.diffRep();
-	if(dTOR.empty()) // No analytical derivative is available, use finite differences
-		TopOptObjFun::g(inTOR, outRes, communicator);
-	else
-		g(inTOR, dTOR, outRes);
-}
-
-void TOFEMObjFun::gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	std::vector<double> dVF = inTOR.computeGradVolumeFraction();
-	if(dVF.empty())
-		TopOptObjFun::gc(inTOR, outRes, communicator);
-	else
-		outRes = std::make_pair(std::move(dVF), true);
-}
-
-void TOFEMObjFun::fAndG(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
-												std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const
-{
-	f(inTOR, fRes, communicator);
-	g(inTOR, gRes, communicator);
-}
-
-#endif
 
 std::vector<ExoBC> TOFEMObjFun::generateExoBCVec(const TOMesh* const inMesh, std::size_t kLoad) const
 {

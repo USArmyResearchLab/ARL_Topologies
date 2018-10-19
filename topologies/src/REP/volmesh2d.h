@@ -86,11 +86,14 @@ public:
 	static std::string getClassName() {return "volmesh2d";}
 	//@}
 
+protected:
+	virtual std::unique_ptr<FilterBase> constructFilter() const;
 private:
 	void finishSetup(const std::vector<std::vector<Point_2_base> >& ptVecs);
 	void findMeshEdges();
 	void findMeshEdges(std::vector<std::vector<Mesh_Segment_2>>& boundarySegs) const;
 
+	typedef TopOptRep TOR;
 	typedef VolMesh<PenaltyFunc, ProjectionFunc> VM;
 protected:
 	std::vector<std::vector<Mesh_Segment_2>> boundaryVV;

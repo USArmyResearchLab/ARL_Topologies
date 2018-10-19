@@ -80,10 +80,10 @@ public:
 #ifdef USE_MPI
 	//! Computes and returns the objective function value and a flag to indicate failure of the objective function
 	/*! The MPI::Comm argument can be used to parallelize the objective function computation */
-	virtual std::pair<double, bool> operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const = 0;
+	virtual std::pair<double, bool> operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const;
 	//! Computes the objective function value and stores it in outRes.  Can be multiple objectives
 	/*! The MPI::Comm argument can be used to parallelize the objective function computation */
-	virtual void f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const = 0;
+	virtual void f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
 	//! Computes the gradient of the objective function with respect to all design variables in the TopOptRep
 	/*! This function computes the gradient of the objective function and can use the MPIHandler to parallelize.
 	 *  Note that the default implementation is a finite difference method and this should be overrided in
@@ -98,12 +98,14 @@ public:
 										std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const;
 	//! Computes the constraint values for a given TopOptRep
 	/*! The MPI::Comm argument can be used to parallelize the objective function computation */
-	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const = 0;
+	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
 	//! Computes the gradient of the constraint function with respect to all design variables in the TopOptRep (in serial)
 	/*! This function computes the gradient of the constraint function.  Note that the default implementation is a
 	 *  finite difference method and this should be overrided in an implemenation if possible.
 	 */
 	virtual void gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
+	//! Generates output for a given TopOptRep.  This output is determined by the implementation and is usually some kind of results file
+	virtual void printResult(const TopOptRep& inTOR, const std::string& fileName, MPI::Comm& communicator) const;
 #endif
 	//! Generates output for a given TopOptRep.  This output is determined by the implementation and is usually some kind of results file
 	virtual void printResult(const TopOptRep& inTOR, const std::string& fileName) const = 0;
@@ -127,11 +129,27 @@ void TopOptObjFun::f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool
 
 #ifdef USE_MPI
 inline
+std::pair<double, bool> TopOptObjFun::operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const
+{
+	return (*this)(inTOR);
+}
+
+inline
 void TopOptObjFun::f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
 {
-	std::pair<double, bool> tmpRes = (*this)(inTOR, communicator);
-	std::vector<double> ofvVec(1, tmpRes.first);
-	outRes = std::make_pair(ofvVec, tmpRes.second);
+	f(inTOR, outRes);
+}
+
+inline
+void TopOptObjFun::c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
+{
+	c(inTOR, outRes);
+}
+
+inline
+void TopOptObjFun::printResult(const TopOptRep& inTOR, const std::string& fileName, MPI::Comm& communicator) const
+{
+	printResult(inTOR, fileName);
 }
 #endif
 } // namespace

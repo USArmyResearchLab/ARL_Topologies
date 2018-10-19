@@ -51,6 +51,8 @@ public:
 	//! Returns the scalar optimization value for element kelem
 	/*! This value is typically used to scale material properties. */
 	double getOptVal(std::size_t kelem) const {return optVals[kelem];}
+	//! Returns a nonmutable reference to the scalar optimization values
+	std::vector<double> const& getOptVals() const {return optVals;}
 	//! Returns the material ID for `kelem`
 	int getMatID(std::size_t kelem) const {return matIDVec[kelem];}
 	//! Returns the node (point) with ID `kn` (for 2d meshes)

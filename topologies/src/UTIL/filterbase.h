@@ -22,6 +22,7 @@
 #define FILTERBASE_H
 
 #include "cgal_types.h"
+#include "helper.h"
 #include <vector>
 #include <memory>
 
@@ -29,6 +30,7 @@ namespace Topologies{
 //! Abstract base class for 2d or 3d filters
 class FilterBase
 {
+	public:
 	public:
 	FilterBase() : curRad(0.1) {}
 	explicit FilterBase(double inRad) : curRad(inRad) {}
@@ -43,13 +45,13 @@ class FilterBase
 	//! Returns a vector of filtered data using a filter of radius `rad`, where xVec is assumed to coincide with the points specified in the original mesh, and the results are given on filtPts
 	virtual std::vector<double> operator()(const std::vector<double>& xVec,
 		const std::vector<Point_3_base>& filtPts, double rad) const = 0;
-	//! Returns a sparse-matrix like vector of maps that gives the partial derivatives of values at filtPts, with respect to all of the original nodes used to initialize the FilterBase object.
+	//! Returns a sparse-matrix like vector of vectors of column/value pairs that gives the partial derivatives of values at filtPts, with respect to all of the original nodes used to initialize the FilterBase object.
 	/*! At return, the vector has size of the number of original points (nodes in the input mesh or grid)
-	 *  and the map associated with that index contains all non-zero partial derivatives at parameter filtPts. 
+	 *  and the vector associated with that index contains all non-zero partial derivatives at parameter filtPts. 
 	 */
-	virtual std::vector<std::map<std::size_t, double>> diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const = 0;
-	//! Returns a sparse-matrix like vector of maps that gives the partial derivatives of values at filtPts, with respect to all of the original nodes used to initialize the FilterBase object.
-	virtual std::vector<std::map<std::size_t, double>> diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const = 0;
+	virtual HelperNS::SparseMatrix diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const = 0;
+	//! Returns a sparse-matrix like vector of vectors of column/value pairs that gives the partial derivatives of values at filtPts, with respect to all of the original nodes used to initialize the FilterBase object.
+	virtual HelperNS::SparseMatrix diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const = 0;
 
 	//! Returns the filtered value of the data loaded in the TOMesh at object construction, at the point `p`
 	virtual Tr_GT::FT operator()(Tr_GT::Point_2 p) const = 0;

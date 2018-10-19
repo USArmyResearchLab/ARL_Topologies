@@ -148,13 +148,12 @@ void VolMesh2D<PenaltyFunc, ProjectionFunc>::finishSetup(const std::vector<std::
 	}
 	// Set up optimization parameters
 	std::size_t numUnks = VM::vmTORSpec.torUnknownLocation == ulNode ? VM::upMesh->getNumNodes() : VM::upMesh->getNumElements();
-	VM::pixelArray = std::vector<double>(numUnks, VM::threshold);
-	// Set up filter
-	VM::upFilt = std::unique_ptr<FilterBase>(new Filter2D<>(VM::upMesh.get(), VM::vmTORSpec.torUnknownLocation == ulElement));
+	TOR::realOptVals = std::vector<double>(numUnks, VM::threshold);
 	// Initialize fixed values
 	VM::initFixedVals();
 	// Set up filter derivative
-	VM::computeDiffFilt();
+	std::unique_ptr<FilterBase> upFilt = constructFilter();
+	VM::computeDiffFilt(*upFilt);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -166,6 +165,12 @@ template <typename PenaltyFunc, typename ProjectionFunc>
 std::unique_ptr<TopOptRep> VolMesh2D<PenaltyFunc, ProjectionFunc>::clone() const
 {
 	return std::unique_ptr<TopOptRep>(new VolMesh2D<PenaltyFunc, ProjectionFunc>(*this));
+}
+
+template <typename PenaltyFunc, typename ProjectionFunc>
+std::unique_ptr<FilterBase> VolMesh2D<PenaltyFunc, ProjectionFunc>::constructFilter() const
+{
+	return std::unique_ptr<FilterBase>(new Filter2D<>(VM::upMesh.get(), VM::vmTORSpec.torUnknownLocation == ulElement));
 }
 
 // Decode
@@ -261,7 +266,7 @@ void VolMesh2D<PenaltyFunc, ProjectionFunc>::prune()
 template <typename PenaltyFunc, typename ProjectionFunc>
 void VolMesh2D<PenaltyFunc, ProjectionFunc>::getDataSize(std::vector<std::size_t>& sizes) const
 {
-	sizes = {VM::pixelArray.size(), 1};
+	sizes = {TOR::realOptVals.size(), 1};
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>

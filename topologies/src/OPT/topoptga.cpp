@@ -73,28 +73,34 @@ void TopOptRealGA::initializePopulation(TopOptRep& initialGuess)
 	// Copy initial guess to chromo 0
 	populationVec[0].resize(realRep.size());
 	std::copy(realRep.begin(), realRep.end(), populationVec[0].begin());
+	std::cout << "Randomizing chromosomes" << std::endl;
 	for(unsigned kpop = 1; kpop < popSize; ++kpop)
 	{
 		// Randomize: (may be used rather than the loop of mutations below)
 		std::vector<double> tmpRealRep;
 		initialGuess.randomize();
 		initialGuess.getRealRep(tmpRealRep);
-		std::list<double>& curChromo = populationVec[kpop];
+		std::vector<double>& curChromo = populationVec[kpop];
 		curChromo.resize(tmpRealRep.size());
 		std::copy(tmpRealRep.begin(), tmpRealRep.end(), curChromo.begin());
 		objFunValVec[kpop] = std::make_pair(std::vector<double>(), false);
 	}
 	// Mutate to start
-//	for(unsigned k = 0; k < 100; ++k)
-//		doMutation();
+	std::cout << "Applying mutation" << std::endl;
+	for(unsigned k = 0; k < 10; ++k)
+		doMutation();
+	// Ensure that one chromosome is still the initial guess
+	std::copy(realRep.begin(), realRep.end(), populationVec[0].begin());
+	// Set best ofv to a high value
 	bestEver = 1e30;
-	initialGuess.setRealRep(realRep); // restore
+	initialGuess.setRealRep(realRep.begin(), realRep.end()); // restore
 }
 
 std::unique_ptr<TopOptRep> TopOptRealGA::optimize(const TopOptRep& initialGuess)
 {
 	torTemplate = initialGuess.clone();
 	initialGuess.getDataSize(chromoSizes);
+	std::cout << "Initializing population of size " << popSize << std::endl;
 	initializePopulation(*torTemplate);
 	std::ofstream statFile("stat.txt");
 	std::cout << "Starting GA: " << std::endl;
@@ -138,17 +144,9 @@ void TopOptRealGA::evaluatePop()
 		makeDiscreteChromos();
 	if(pMPIH)
 	{
-		// Set up vector of TORs for evaluation
-		std::vector<std::unique_ptr<TopOptRep> > torUPVec;
-		std::vector<TopOptRep*> torVec(popSize);
-		for(unsigned k = 0; k < popSize; ++k)
-		{
-			setTOR(populationVec[k], *torTemplate);
-			torUPVec.push_back(torTemplate->clone());
-			torVec[k] = torUPVec[k].get();
-		}
-		pMPIH->rootBatchEvaluate(torVec, objFunValVec);
-		addConstraintPenalties(torVec);
+		//  Send population out for evaluation
+		pMPIH->rootBatchEvaluate(populationVec, objFunValVec);
+		addConstraintPenalties();
 	}
 	else if(pObjFun)
 	{	
@@ -189,6 +187,15 @@ void TopOptRealGA::addConstraintPenalties(const std::vector<TopOptRep*>& torVec)
 		addConstraintPenalties(torVec[k], k);
 }
 
+void TopOptRealGA::addConstraintPenalties()
+{
+	for(unsigned k = 0; k < popSize; ++k)
+	{
+		setTOR(populationVec[k], *torTemplate);
+		addConstraintPenalties(torTemplate.get(), k);
+	}
+}
+
 void TopOptRealGA::doSelection()
 {
 	if(!noneValid())
@@ -200,7 +207,7 @@ void TopOptRealGA::doSelection()
 	}
 }
 
-void debugPrint2D(const std::string& varName, std::list<double>& list1, const std::vector<std::size_t>& sizes)
+void debugPrint2D(const std::string& varName, std::vector<double>& list1, const std::vector<std::size_t>& sizes)
 {
 	std::cout << varName << " = [";
 	for(std::size_t k1 = 0; k1 < sizes[0]; ++k1)
@@ -208,7 +215,7 @@ void debugPrint2D(const std::string& varName, std::list<double>& list1, const st
 		for(std::size_t k2 = 0; k2 < sizes[1]; ++k2)
 		{
 			std::size_t curIndex = k2 + k1*sizes[1];
-			std::list<double>::iterator lit1 = list1.begin();
+			auto lit1 = list1.begin();
 			std::advance(lit1, curIndex);
 			std::cout << *lit1 << " ";
 		}
@@ -223,10 +230,13 @@ void TopOptRealGA::doCrossover()
 	{
 		if(HelperNS::RandomGen::instance().coinFlip(crossRate) && (kpop + 1) < populationVec.size())
 		{
+			// Switched to uniform crossover for now, probably works better for non-Cartesian meshes
+			GeneticOperators::Crossover::hybridizeUniform(populationVec[kpop], populationVec[kpop + 1]);
+/*
 			if(chromoSizes[1] == 1 || chromoSizes.size() == 3)
 				GeneticOperators::Crossover::hybridize1D(populationVec[kpop], populationVec[kpop + 1]);
 			else
-				GeneticOperators::Crossover::hybridize2D(populationVec[kpop], populationVec[kpop + 1], chromoSizes);
+				GeneticOperators::Crossover::hybridize2D(populationVec[kpop], populationVec[kpop + 1], chromoSizes);*/
 			objFunValVec[kpop].second = false;
 			objFunValVec[kpop + 1].second = false;
 		}
@@ -241,13 +251,16 @@ void TopOptRealGA::doMutation()
 		{
 			if(HelperNS::RandomGen::instance().coinFlip(mutationRate))
 			{
-				if(chromoSizes[1] == 1 || chromoSizes.size() == 3)
+				if(chromoSizes[1] == 1)
 					GeneticOperators::Mutation::standardMutation(populationVec[kpop], kelem, mutationRange);
 				else
 				{
 					unsigned locMutRad = HelperNS::RandomGen::instance().randIntInRange((unsigned)0, curMutRad);
 //					unsigned locMutRad = curMutRad;
-					GeneticOperators::Mutation::nonlocalMutation2D(populationVec[kpop], chromoSizes, kelem, locMutRad, mutationRange);
+					if(chromoSizes.size() == 2)
+						GeneticOperators::Mutation::nonlocalMutation2D(populationVec[kpop], chromoSizes, kelem, locMutRad, mutationRange);
+					else
+						GeneticOperators::Mutation::nonlocalMutation3D(populationVec[kpop], chromoSizes, kelem, locMutRad, mutationRange);
 				}
 				objFunValVec[kpop].second = false;
 			}
@@ -287,18 +300,16 @@ void TopOptRealGA::boundsCheckChromos()
 	}
 }
 
-void TopOptRealGA::setTOR(const std::list<double>& x, TopOptRep& result) const
+void TopOptRealGA::setTOR(const std::vector<double>& x, TopOptRep& result) const
 {
-	std::vector<double> realRep(x.size());
-	std::copy(x.begin(), x.end(), realRep.begin());
-	result.setRealRep(realRep);
+	result.setRealRep(x.begin(), x.end());
 }
 
 void TopOptRealGA::makeDiscreteChromos()
 {
 	for(std::size_t k = 0; k < populationVec.size(); ++k)
 	{
-		std::list<double>& curChromo = populationVec[k];
+		std::vector<double>& curChromo = populationVec[k];
 		HelperNS::greaterThanX locGTX(0.5);
 		std::replace_if(curChromo.begin(), curChromo.end(), locGTX, 1.);
 		HelperNS::lessThanX locLTX(0.51);
@@ -432,13 +443,13 @@ void TopOptRealGA::evaluateStatistics()
 void TopOptRealGA::updateBestChromosPareto()
 {
 	// Append old best chromos with current pop
-	std::vector<std::pair<std::vector<double>, bool> > objFunOfPopAndBestVec;
+	std::vector<std::pair<std::vector<double>, bool>> objFunOfPopAndBestVec;
 	combineOFVVecs(objFunOfPopAndBestVec);
 	// Compute rank of combined vectors
 	std::vector<std::size_t> rank;
 	GeneticOperators::Selection::computeParetoRank(rank, objFunOfPopAndBestVec);
-	std::vector<std::list<double> > prevBestChromoVec = bestChromoVec;
-	std::vector<std::vector<double> > prevBestOFVs = bestChromoOFVs;
+	std::vector<std::vector<double>> prevBestChromoVec = bestChromoVec;
+	std::vector<std::vector<double>> prevBestOFVs = bestChromoOFVs;
 	bestChromoVec.clear();
 	bestChromoOFVs.clear();
 	for(std::size_t k = 0; k < populationVec.size(); ++k)
@@ -461,7 +472,7 @@ void TopOptRealGA::updateBestChromosPareto()
 	removeDuplicateBestChromos();
 }
 
-void TopOptRealGA::combineOFVVecs(std::vector<std::pair<std::vector<double>, bool> >& outVec) const
+void TopOptRealGA::combineOFVVecs(std::vector<std::pair<std::vector<double>, bool>>& outVec) const
 {
 	// FIrst generate a bestOFVvec compatible with objFunValVec
 	outVec.clear();

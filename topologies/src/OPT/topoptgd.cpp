@@ -65,7 +65,7 @@ std::unique_ptr<TopOptRep> TopOptGD::optimize(const TopOptRep& initialGuess)
 		std::vector<double> g(x.size(), 0.);
 		computeGradient(x, g, *workTOR);
 		curTol = gdUpdate(x, g, curf.first, *workTOR);
-		workTOR->setRealRep(x);
+		workTOR->setRealRep(x.begin(), x.end());
 		std::pair<double, bool> curf = evaluateSingleObjective(workTOR.get(), efF);
 		if(curf.first < bestOFV)
 		{
@@ -85,7 +85,7 @@ std::unique_ptr<TopOptRep> TopOptGD::optimize(const TopOptRep& initialGuess)
 
 void TopOptGD::computeGradient(const std::vector<double>& x, std::vector<double>& g, TopOptRep& workTOR)
 {
-	workTOR.setRealRep(x);
+	workTOR.setRealRep(x.begin(), x.end());
 	std::pair<std::vector<double>, bool> resG = evaluateGradient(&workTOR);
 	// Apply gradient filter
 	filterGradient(x, resG.first, workTOR, filterSize, minDensity);

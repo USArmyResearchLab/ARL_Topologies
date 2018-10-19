@@ -36,11 +36,6 @@ public:
 	virtual std::pair<double, bool> operator()(const TopOptRep& inTOR) const;
 	virtual void f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
 	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
-#ifdef USE_MPI
-	virtual std::pair<double, bool> operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const;
-	virtual void f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-#endif
 	virtual void printResult(const TopOptRep& inTOR, const std::string& fileName) const;
 };
 
@@ -67,26 +62,6 @@ void TOTestObjFun::c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool
 {
 	f(inTOR, outRes);
 }
-
-#ifdef USE_MPI
-inline
-std::pair<double, bool> TOTestObjFun::operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const
-{
-	return (*this)(inTOR);
-}
-
-inline
-void TOTestObjFun::f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	f(inTOR, outRes);
-}
-
-inline
-void TOTestObjFun::c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	c(inTOR, outRes);
-}
-#endif
 
 inline
 void TOTestObjFun::printResult(const TopOptRep& inTOR, const std::string& fileName) const 

@@ -108,7 +108,8 @@ TEST_CASE("Testing optimality criterion method","[TopOptOC]")
 	double target = 0.5, constraint = 0.25;
 	TOTestObjFun2 testObjFun(target, constraint, false);
 	TestRep testTORep;
-	testTORep.setRealRep({0.2, 0.2});
+	std::vector<double> testRealRep = {0.2, 0.2};
+	testTORep.setRealRep(testRealRep.begin(), testRealRep.end());
 	std::vector<OutputHandler*> ohVec;
 	TopOptOC testOpt(loadOptParams("ocinput.xml"), &testObjFun, ohVec);
 	testTopOpt(testOpt, testTORep, {constraint/2., constraint/2.}, 1e-4);
@@ -122,7 +123,8 @@ TEST_CASE("Testing method of moving asymptotes","[TopOptMMA]")
 	double target = 0.5, constraint = 0.25;
 	TOTestObjFun2 testObjFun(target, constraint);
 	TestRep testTORep;
-	testTORep.setRealRep({0.2, 1.});
+	std::vector<double> testRealRep = {0.2, 1.};
+	testTORep.setRealRep(testRealRep.begin(), testRealRep.end());
 	std::vector<OutputHandler*> ohVec;
 	TopOptNLOpt testOpt(tootMMA, loadOptParams("mmainput.xml"), &testObjFun, ohVec);
 	testTopOpt(testOpt, testTORep, {constraint, target});
@@ -141,7 +143,8 @@ TEST_CASE("Testing BFGS method","[TopOptBFGS]")
 	double target = 0.5, constraint = 0.;
 	TOTestObjFun2 testObjFun(target, constraint);
 	TestRep testTORep;
-	testTORep.setRealRep({0.1, 1.});
+	std::vector<double> testRealRep = {0.1, 1.};
+	testTORep.setRealRep(testRealRep.begin(), testRealRep.end());
 	std::vector<OutputHandler*> ohVec;
 	TopOptNLOpt testOpt(tootBFGS, loadOptParams("bfgsinput.xml"), &testObjFun, ohVec);
 	testTopOpt(testOpt, testTORep, {constraint, target});
@@ -154,7 +157,8 @@ TEST_CASE("Testing BFGS method","[TopOptBFGS]")
 	target = 0.5;
 	constraint = 0.25;
 	testObjFun = TOTestObjFun2(target, constraint);
-	testTORep.setRealRep({0.2, 1.});
+	testRealRep = {0.2, 1.};
+	testTORep.setRealRep(testRealRep.begin(), testRealRep.end());
 	testTopOpt(testOpt, testTORep, {constraint, target});
 	// Test factory creation
 	std::unique_ptr<TopOpt> upTO = TopOptFactory::createTopOpt(loadONI("bfgsinput.xml"), &testObjFun, ohVec);
@@ -166,7 +170,8 @@ TEST_CASE("Testing GA method","[TopOptGA]")
 	double target = 0.5, constraint = 0.;
 	TOTestObjFun2 testObjFun(target, constraint);
 	TestRep testTORep;
-	testTORep.setRealRep({0.1, 1.});
+	std::vector<double> testRealRep = {0.1, 1.};
+	testTORep.setRealRep(testRealRep.begin(), testRealRep.end());
 	std::vector<OutputHandler*> ohVec;
 	TopOptRealGA testOpt(loadOptParamsGA("gainput.xml"), &testObjFun, ohVec);
 	testTopOpt(testOpt, testTORep, {constraint, target}, 1e-3);
@@ -185,7 +190,8 @@ TEST_CASE("Testing chain method","[TopOptChain]")
 	double target = 0.5, constraint = 0.;
 	TOTestObjFun2 testObjFun(target, constraint);
 	TestRep testTORep;
-	testTORep.setRealRep({0.1, 1.});
+	std::vector<double> testRealRep = {0.1, 1.};
+	testTORep.setRealRep(testRealRep.begin(), testRealRep.end());
 	std::vector<OutputHandler*> ohVec;
 	TopOptChain testOpt(loadOptParamsChain("chaininput.xml"), &testObjFun, ohVec);
 	testTopOpt(testOpt, testTORep, {constraint, target});

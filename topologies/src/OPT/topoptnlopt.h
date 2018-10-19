@@ -50,21 +50,25 @@ private:
 	// Objective function wrappers for NLOpt
   static double nloptOFWrapper(const std::vector<double> &x, std::vector<double> &grad, void* data);
   static double nloptConstraintWrapper(const std::vector<double> &x, std::vector<double> &grad, void* data);
+	static void nloptMConstraintWrapper(unsigned m, double *res, unsigned n, const double *x, double *grad, void *data);
 	// Member functions
 	double f(const std::vector<double> &x, std::vector<double> &grad) const;
 	double c(const std::vector<double> &x, std::vector<double> &grad) const;
+	void c(std::vector<double>& cres, std::vector<double>& grad) const;
+	void c(const std::vector<double>& x, std::vector<double>& cres, std::vector<double>& grad) const;
+	void c(unsigned m, double *res, unsigned n, const double *x, double *grad) const;
 	// Utility functions needed for above
-	double addConstraints(double& curf) const;
-	void addGradientConstraints(std::vector<double>& resG, double curc) const;
-  void computeGradient(const std::vector<double>& x, std::vector<double>& g, double curc) const;
-	void computeGradientC(const std::vector<double>& x, std::vector<double>& g) const;
+	std::vector<double> addConstraints(double& curf) const;
+	void addGradientConstraints(std::vector<double>& resG, std::vector<double> const& curc) const;
   void setTOR(const std::vector<double>& x) const;
+	bool checkConstraintSize(std::vector<double> const& x, std::vector<double> const& gc) const;
+	std::vector<double> constraintPenaltyDerivative(std::vector<double> const& curc) const;
 	// Data
 	TOOType myTOOT;
 	unsigned curiter;
   double filterSize, minDensity, stopTol;
 	double constraintPenalty, penaltyPower;
-  unsigned maxIters;
+  unsigned maxIters, numConstraints;
 	bool useConstraints;
 	mutable std::unique_ptr<TopOptRep> workTOR; // This is used as temporary storage, no need to write custom copy constructors
 };

@@ -53,11 +53,12 @@ void testOneVoxelRepInit(TopOptRep& testVox, double reqVolFrac, bool refined = f
 	std::vector<std::vector<double>> realParams;
 	testVox.getDefiningParameters(discreteParams, realParams);
 	REQUIRE(discreteParams.size() == 2);
-	REQUIRE(discreteParams[0].size() == 4);
+	REQUIRE(discreteParams[0].size() == 5);
 	REQUIRE(discreteParams[0][0] == rf*10); // Nx
 	REQUIRE(discreteParams[0][1] == rf*2); // Ny
 	REQUIRE(discreteParams[0][2] == rf*15); // Nz
 	REQUIRE((MeshElementType)discreteParams[0][3] == metHex); // Mesh element type
+	REQUIRE((bool)discreteParams[0][4] == false); //useInterpolatoryFilt 
 	REQUIRE(discreteParams[1].size() == 6);
 	REQUIRE((DimensionType)discreteParams[1][0] == dt3d); // Number of dimensions
 	REQUIRE((MeshFileFormat)discreteParams[1][1] == mffStructured); // Mesh file input type
@@ -107,11 +108,12 @@ void testOneHeaviRepInit(TopOptRep& testVox, double reqVolFrac, bool refined = f
 	std::vector<std::vector<double>> realParams;
 	testVox.getDefiningParameters(discreteParams, realParams);
 	REQUIRE(discreteParams.size() == 2);
-	REQUIRE(discreteParams[0].size() == 4);
+	REQUIRE(discreteParams[0].size() == 5);
 	REQUIRE(discreteParams[0][0] == rf*10); // Nx
 	REQUIRE(discreteParams[0][1] == rf*2); // Ny
 	REQUIRE(discreteParams[0][2] == rf*15); // Nz
 	REQUIRE((MeshElementType)discreteParams[0][3] == metTet); // Mesh element type
+	REQUIRE((bool)discreteParams[0][4] == false); //useInterpolatoryFilt 
 	REQUIRE(discreteParams[1].size() == 6);
 	REQUIRE((DimensionType)discreteParams[1][0] == dt3d); // Number of dimensions
 	REQUIRE((MeshFileFormat)discreteParams[1][1] == mffStructured); // Mesh file input type
@@ -157,7 +159,7 @@ TEST_CASE("Testing creation of VoxelRep class","[VoxelRep]")
 	// Test assignment operator
 	testVox = VoxelRep<>(tortVoxel, discreteParams, realParams);
 	std::vector<double> realVec(300, 0.123);
-  testVox.setRealRep(realVec);
+  testVox.setRealRep(realVec.begin(), realVec.end());
 	testOneVoxelRepInit(testVox, 0.123);
 	// Test copy ctor
 	VoxelRep<> copyVox(testVox);
@@ -193,7 +195,7 @@ TEST_CASE("Testing creation of Heaviside3D class","[Heaviside3D]")
 	// Test assignment operator
 	testHeavi = VoxelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside>(tortHeaviside3D, discreteParams, realParams);
 	std::vector<double> realVec(528, 0.123);
-	testHeavi.setRealRep(realVec);
+	testHeavi.setRealRep(realVec.begin(), realVec.end());
 	testOneHeaviRepInit(testHeavi, 0.123);
 	// Test copy ctor
 	VoxelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> copyHeavi(testHeavi);

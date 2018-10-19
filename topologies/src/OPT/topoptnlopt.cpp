@@ -29,6 +29,7 @@
 #include "tomesh.h"
 
 #include <nlopt.hpp>
+#include <algorithm>
 
 namespace Topologies{
 namespace
@@ -70,6 +71,7 @@ TopOptNLOpt::TopOptNLOpt(TOOType inTOOT, const InputLoader::TOOGeneric& inputDat
 	constraintPenalty(inputData.getConstraintPenalty()),
 	penaltyPower(inputData.getPenaltyPower()),
 	useConstraints(optimizerSupportsConstraints(inTOOT)),
+	numConstraints(inputData.getNumConstraints()),
 	minDensity(0.001)
 {
 }
@@ -99,12 +101,20 @@ std::unique_ptr<TopOptRep> TopOptNLOpt::optimize(const TopOptRep& initialGuess)
 	opt.set_upper_bounds(ub);
 	// Set objective function
 	curiter = 0;
-	opt.set_min_objective(TopOptNLOpt::nloptOFWrapper, this);
+	opt.set_min_objective(TopOptNLOpt::nloptOFWrapper, static_cast<void*>(this));
 	// Set constraint
 	// Constraint uses a tolerance, consider making this an input parameter
+	double const constraintTol = 1e-4;
 	if(useConstraints)
-		opt.add_inequality_constraint(TopOptNLOpt::nloptConstraintWrapper, this, 1e-4);
-//	opt.add_equality_constraint(TopOptNLOpt::nloptConstraintWrapper, this, 1e-8);
+	{
+		if(numConstraints == 1)
+			opt.add_inequality_constraint(TopOptNLOpt::nloptConstraintWrapper, static_cast<void*>(this), constraintTol);
+		else
+		{
+			std::vector<double> tols(numConstraints, constraintTol);
+			opt.add_inequality_mconstraint(TopOptNLOpt::nloptMConstraintWrapper, static_cast<void*>(this), tols);
+		}			
+	}
 	// Set stopping criterion
 	opt.set_xtol_rel(stopTol);
 	opt.set_maxeval(maxIters);
@@ -116,27 +126,29 @@ std::unique_ptr<TopOptRep> TopOptNLOpt::optimize(const TopOptRep& initialGuess)
 	return std::move(workTOR);
 }
 
-void TopOptNLOpt::computeGradient(const std::vector<double>& x, std::vector<double>& g, double curc) const
+std::vector<double> TopOptNLOpt::constraintPenaltyDerivative(std::vector<double> const& curc) const
 {
-	setTOR(x);
-	std::pair<std::vector<double>, bool> resG = evaluateGradient(workTOR.get());
-	g = std::move(resG.first);
-	addGradientConstraints(g, curc);
-	filterGradient(x, g, *workTOR, filterSize, minDensity);
+	std::vector<double> fact(numConstraints, 0.);
+	for(std::size_t k = 0; k < curc.size(); ++k)
+	{
+		if(curc[k] >= 0.)
+			fact[k] = constraintPenalty*penaltyPower*pow(fabs(curc[k]), penaltyPower - 1.);
+	}
+	return fact;
 }
 
-void TopOptNLOpt::addGradientConstraints(std::vector<double>& resG, double curc) const
+void TopOptNLOpt::addGradientConstraints(std::vector<double>& resG, std::vector<double> const& curc) const
 {
 	if(!useConstraints)
 	{
 		// Compute penalty function gradient
 		std::pair<std::vector<double>, bool> curgc = evaluateGradient(workTOR.get(), efGC);
-		double fact = constraintPenalty*penaltyPower*pow(fabs(curc), penaltyPower - 1.);
-		if(curc < 0.)
-			fact = 0.;
-//			fact *= -1.;
-		for(std::size_t k = 0; k < resG.size(); ++k)
-			resG[k] += fact*curgc.first[k];
+		std::vector<double> fact = constraintPenaltyDerivative(curc);
+		std::size_t nc = numConstraints;
+		std::size_t csize = resG.size();
+		for(std::size_t kx = 0; kx < csize; ++kx)
+			for(std::size_t kc = 0; kc < nc; ++kc)
+				resG[kx] += fact[kc]*curgc.first[kx + kc*csize];
 	}
 }
 
@@ -161,7 +173,7 @@ double TopOptNLOpt::f(const std::vector<double>& x, std::vector<double>& grad) c
 		std::pair<double, bool> res = evaluateSingleObjective(workTOR.get(), efF);
 		curf = res.first;
 	}
-	double c0 = addConstraints(curf);
+	std::vector<double> c0 = addConstraints(curf);
 	if(!grad.empty())
 	{
 		addGradientConstraints(grad, c0);
@@ -172,35 +184,77 @@ double TopOptNLOpt::f(const std::vector<double>& x, std::vector<double>& grad) c
 	return curf;
 }
 
-double TopOptNLOpt::addConstraints(double& curf) const
+std::vector<double> TopOptNLOpt::addConstraints(double& curf) const
 {
 	// Add constraints if necessary
-	double c0 = 0.;
+	std::vector<double> c0(1, 0.);
 	if(!useConstraints)
 	{
 		// Add constraint violation penalty
 		std::pair<std::vector<double>, bool> curc = evaluateMultiObjective(workTOR.get(), efC);
+		c0.resize(curc.first.size());
 		double addTerm = 0.;
 		for(std::size_t k = 0; k < curc.first.size(); ++k)
 		{
-			if(curc.first[k] > 0.) // Inequality constraint
+			if(curc.first[k] > 0.) // Inequality constraint is active
+			{
 				addTerm += pow(curc.first[k], penaltyPower)*constraintPenalty;
+				c0[k] = curc.first[k];
+			}
+			else
+				c0[k] = 0.;
 		}
 		curf += addTerm;
-		if(!curc.first.empty())
-			c0 = curc.first[0];
 	}
 	return c0;
 }
 
 double TopOptNLOpt::nloptConstraintWrapper(const std::vector<double>& x, std::vector<double>& grad, void* data)
 {
-	return reinterpret_cast<TopOptNLOpt*>(data)->c(x, grad);
+	return reinterpret_cast<TopOptNLOpt const*>(data)->c(x, grad);
+}
+
+void TopOptNLOpt::nloptMConstraintWrapper(unsigned m, double *res, unsigned n, const double *x, double *grad, void *data)
+{
+	reinterpret_cast<TopOptNLOpt const*>(data)->c(m, res, n, x, grad);
+}
+
+void TopOptNLOpt::c(unsigned m, double *resArray, unsigned n, const double *x, double *gradArray) const
+{
+	// This version has a lot of data copies, beware.
+	// I'm not sure if there's a better way to wrap the data to avoid the copies
+	workTOR->setRealRep(x, x+n);
+	// Compute constraints
+	std::vector<double> gradVec;
+	if(gradArray != nullptr)
+		gradVec.resize(n*m);
+	std::vector<double> cres;
+	c(cres, gradVec);
+	// Copy results into these gross C-style arrays
+	std::copy(cres.begin(), cres.end(), resArray);
+	std::copy(gradVec.begin(), gradVec.end(), gradArray);
 }
 
 double TopOptNLOpt::c(const std::vector<double>& x, std::vector<double>& grad) const
 {
+	std::vector<double> cres;
+	c(x, cres, grad);
+	if(!cres.empty())
+	{
+		std::cout << "Constraint value: " << cres[0] << std::endl;
+		return cres[0];
+	}
+	return 0;
+}
+
+void TopOptNLOpt::c(const std::vector<double>& x, std::vector<double>& cres, std::vector<double>& grad) const
+{
 	setTOR(x);
+	c(cres, grad);
+}
+
+void TopOptNLOpt::c(std::vector<double>& cres, std::vector<double>& grad) const
+{
 	// Compute constraints
 	std::pair<std::vector<double>, bool> curc = evaluateMultiObjective(workTOR.get(), efC);
 	// Compute gradient of constraints
@@ -209,18 +263,20 @@ double TopOptNLOpt::c(const std::vector<double>& x, std::vector<double>& grad) c
 		std::pair<std::vector<double>, bool> curgc = evaluateGradient(workTOR.get(), efGC);
 		grad = std::move(curgc.first);
 	}
-	if(curc.first.size() > 0)
-	{
-		std::cout << "Constraint value: " << curc.first[0] << std::endl;
-		return curc.first[0];
-	}
-	std::cout << "Warning: No constraints passed from objective function!" << std::endl;
-	return 0;
+	if(curc.second)
+		cres = curc.first;
+	else
+		std::cout << "Warning: No constraints passed from objective function!" << std::endl;
 }
 
 void TopOptNLOpt::setTOR(const std::vector<double>& x) const
 {
-  workTOR->setRealRep(x);
+  workTOR->setRealRep(x.begin(), x.end());
+}
+
+bool TopOptNLOpt::checkConstraintSize(std::vector<double> const& x, std::vector<double> const& gc) const
+{
+	return numConstraints == gc.size()/x.size();
 }
 
 }

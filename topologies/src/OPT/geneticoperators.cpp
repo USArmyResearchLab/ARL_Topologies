@@ -123,39 +123,65 @@ namespace GeneticOperators
 			std::cout << "Not yet implemented" << std::endl;
 			abort();
 		}
-	}
+		
+		template<typename container>
+		void hybridizeUniform(container& chromo1, container& chromo2)
+		{
+			double swapProb = HelperNS::RandomGen::instance().randRealInRange(0.1, 0.5);
+			double hybridizeProb = HelperNS::RandomGen::instance().randRealInRange(0., 0.1);
+			auto chromo1It = chromo1.begin();
+			auto chromo2It = chromo2.begin();
+			for(; chromo1It != chromo1.end() && chromo2It != chromo2.end(); ++chromo1It, ++chromo2It)
+			{
+				if(HelperNS::RandomGen::instance().coinFlip(swapProb))
+				{
+					double blendVal = 0.; // Swap values
+					if(HelperNS::RandomGen::instance().coinFlip(hybridizeProb))
+						blendVal = HelperNS::RandomGen::instance().randRealInRange<double>(); // Hybridize values
+					double const d1 = *chromo1It, d2 = *chromo2It;
+					*chromo1It = blendVal*d1 + (1. - blendVal)*d2;
+					*chromo2It = blendVal*d2 + (1. - blendVal)*d1;	
+				}
+			}
+		}
+		// Explicit instantiations
+		template void hybridizeUniform(std::list<double>&, std::list<double>&);
+		template void hybridizeUniform(std::vector<double>&, std::vector<double>&);
+	}//namespace Crossover
 
 	namespace Mutation
 	{
-		void standardMutation(std::list<double>& chromo, std::size_t kelem, double range)
+		template<typename container>
+		void standardMutation(container& chromo, std::size_t kelem, double range)
 		{
 			double rval = HelperNS::RandomGen::instance().randRealInRange(-range, range);
-			std::list<double>::iterator kit = chromo.begin();
+			auto kit = chromo.begin();
 			std::advance(kit, kelem);
 			double curval = *kit;
 			*kit = curval + rval;
 		}
 
-    void nonlocalMutation2D(std::list<double>& chromo, const std::vector<std::size_t>& sizes, std::size_t kelem, 
+		template<typename container>
+    void nonlocalMutation2D(container& chromo, const std::vector<std::size_t>& sizes, std::size_t kelem, 
 														unsigned radius, double range)
 		{
-			unsigned rad2 = radius*radius;
-			std::size_t e1 = kelem/sizes[1];
-			std::size_t e2 = kelem%sizes[1];
-			double rval = HelperNS::RandomGen::instance().randRealInRange(-range, range);
-			std::list<double>::iterator kit = chromo.begin();
 			if(chromo.size() != sizes[0]*sizes[1])
 			{
 				std::cout << "Error, chromo size doesn't match TOR template size in GA mutation" << std::endl;
 				return;
 			}
-			for(std::size_t k1 = 0; k1 < sizes[0]; ++k1)
+			unsigned rad2 = radius*radius;
+			std::size_t e1 = kelem/sizes[0];
+			std::size_t e0 = kelem - e1*sizes[0];
+			double rval = HelperNS::RandomGen::instance().randRealInRange(-range, range);
+			auto kit = chromo.begin();
+			for(std::size_t k1 = 0; k1 < sizes[1]; ++k1)
 			{
-				for(std::size_t k2 = 0; k2 < sizes[1]; ++k2)
+				for(std::size_t k0 = 0; k0 < sizes[0]; ++k0)
 				{
+					std::size_t d0 = HelperNS::absdiff(k0, e0);
 					std::size_t d1 = HelperNS::absdiff(k1, e1);
-					std::size_t d2 = HelperNS::absdiff(k2, e2);
-					if((d1*d1 + d2*d2) <= rad2)
+					if((d0*d0 + d1*d1) <= rad2)
 					{
 						double curval = *kit;
 						*kit = curval + rval;
@@ -164,6 +190,48 @@ namespace GeneticOperators
 				}
 			}
 		}
-	}
-}
+		
+		template<typename container>
+		void nonlocalMutation3D(container& chromo, const std::vector<std::size_t>& sizes, std::size_t kelem, 
+														unsigned radius, double range)
+		{
+			if(chromo.size() != sizes[0]*sizes[1]*sizes[2])
+			{
+				std::cout << "Error, chromo size doesn't match TOR template size in GA mutation" << std::endl;
+				return;
+			}
+			unsigned rad2 = radius*radius;
+			std::size_t e2 = kelem/sizes[0]/sizes[1];
+			std::size_t e1 = (kelem - e2*sizes[0]*sizes[1])/sizes[1];
+			std::size_t e0 = kelem - e2*sizes[1]*sizes[2] - e1*sizes[1];
+			double rval = HelperNS::RandomGen::instance().randRealInRange(-range, range);
+			auto kit = chromo.begin();
+			for(std::size_t k2 = 0; k2 < sizes[2]; ++k2)
+			{
+				for(std::size_t k1 = 0; k1 < sizes[1]; ++k1)
+				{
+					for(std::size_t k0 = 0; k0 < sizes[0]; ++k0)
+					{
+						std::size_t d0 = HelperNS::absdiff(k0, e0);
+						std::size_t d1 = HelperNS::absdiff(k1, e1);
+						std::size_t d2 = HelperNS::absdiff(k2, e2);
+						if((d0*d0 + d1*d1 + d2*d2) <= rad2)
+						{
+							double curval = *kit;
+							*kit = curval + rval;
+						}
+						++kit;
+					}
+				}
+			}
+		}
+		// Explicit instantiations
+		template void standardMutation(std::list<double>&, std::size_t, double);
+		template void standardMutation(std::vector<double>&, std::size_t, double);
+    template void nonlocalMutation2D(std::list<double>& chromo,	const std::vector<std::size_t>&, std::size_t, unsigned, double);
+    template void nonlocalMutation2D(std::vector<double>& chromo, const std::vector<std::size_t>&, std::size_t, unsigned, double);
+    template void nonlocalMutation3D(std::list<double>& chromo, const std::vector<std::size_t>&, std::size_t, unsigned, double);
+    template void nonlocalMutation3D(std::vector<double>& chromo, const std::vector<std::size_t>&, std::size_t, unsigned, double);
+	}//namespace Mutation
+}//namespace GeneticOperators
 }

@@ -46,15 +46,27 @@ namespace GeneticOperators
 		 *  the values along it are hybridized and the values past that row/column are swapped.
 		 */
 		void hybridize3D(std::list<double>& chromo1, std::list<double>& chromo2, const std::vector<std::size_t>& sizes);
+		//! Uniform crossover implementation
+		/*! This implementation swaps a random subset of values in chromo1 and chromo2 and blends a random subset of the
+		 *  swapped values.  The size of the subsets is chosen randomly.
+		 */
+		template<typename container>
+		void hybridizeUniform(container& chromo1, container& chromo2);
 	}
 
 	//! Namespace that contains mutation opterators for TopOptGA
 	namespace Mutation
 	{
 		//! Mutation function that adds a random value with maximum value range to the kelem element of chromo
-		void standardMutation(std::list<double>& chromo, std::size_t kelem, double range);
+		template<typename container>
+		void standardMutation(container& chromo, std::size_t kelem, double range);
 		//! Similar to standardMutation, but this function also mutates the surrounding values (assuming a 2d chromo) within radius distance
-		void nonlocalMutation2D(std::list<double>& chromo, const std::vector<std::size_t>& sizes, std::size_t kelem, 
+		template<typename container>
+		void nonlocalMutation2D(container& chromo, const std::vector<std::size_t>& sizes, std::size_t kelem, 
+														unsigned radius, double range);
+		//! Similar to standardMutation, but this function also mutates the surrounding values (assuming a 3d chromo) within radius distance
+		template<typename container>
+		void nonlocalMutation3D(container& chromo, const std::vector<std::size_t>& sizes, std::size_t kelem, 
 														unsigned radius, double range);
 	}
 }

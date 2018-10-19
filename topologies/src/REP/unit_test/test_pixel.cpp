@@ -52,10 +52,11 @@ void testOnePixelRepInit(TopOptRep& testPix, double reqVolFrac, bool refined = f
 	std::vector<std::vector<double>> realParams;
 	testPix.getDefiningParameters(discreteParams, realParams);
 	REQUIRE(discreteParams.size() == 2);
-	REQUIRE(discreteParams[0].size() == 3);
+	REQUIRE(discreteParams[0].size() == 4);
 	REQUIRE(discreteParams[0][0] == rf*15); // Nx
 	REQUIRE(discreteParams[0][1] == rf*30); // Ny
 	REQUIRE((MeshElementType)discreteParams[0][2] == metQuad); // Mesh element type
+	REQUIRE((bool)discreteParams[0][3] == false); // useInterpolatoryFilt
 	REQUIRE(discreteParams[1].size() == 6);
 	REQUIRE((DimensionType)discreteParams[1][0] == dt2d); // Number of dimensions
 	REQUIRE((MeshFileFormat)discreteParams[1][1] == mffStructured); // Mesh file input type
@@ -103,10 +104,11 @@ void testOneHeaviRepInit(TopOptRep& testPix, double reqVolFrac, bool refined = f
 	std::vector<std::vector<double>> realParams;
 	testPix.getDefiningParameters(discreteParams, realParams);
 	REQUIRE(discreteParams.size() == 2);
-	REQUIRE(discreteParams[0].size() == 3);
+	REQUIRE(discreteParams[0].size() == 4);
 	REQUIRE(discreteParams[0][0] == rf*15); // Nx
 	REQUIRE(discreteParams[0][1] == rf*30); // Ny
 	REQUIRE((MeshElementType)discreteParams[0][2] == metTri); // Mesh element type
+	REQUIRE((bool)discreteParams[0][3] == false); // useInterpolatoryFilt 
 	REQUIRE(discreteParams[1].size() == 6);
   REQUIRE((DimensionType)discreteParams[1][0] == dt2d); // Number of dimensions
   REQUIRE((MeshFileFormat)discreteParams[1][1] == mffStructured); // Mesh file input type
@@ -151,7 +153,7 @@ TEST_CASE("Testing creation of PixelRep class","[PixelRep]")
 	// Test assignment operator
 	testPix = PixelRep<>(tortPixel, discreteParams, realParams);
 	std::vector<double> realVec(450, 0.123);
-  testPix.setRealRep(realVec);
+  testPix.setRealRep(realVec.begin(), realVec.end());
 	testOnePixelRepInit(testPix, 0.123);
 	// Test copy ctor
 	PixelRep<> copyPix(testPix);
@@ -187,7 +189,7 @@ TEST_CASE("Testing creation of Heaviside2D class","[Heaviside2D]")
 	// Test assignment operator
 	testHeavi = PixelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside>(tortHeaviside2D, discreteParams, realParams);
 	std::vector<double> realVec(496, 0.123);
-	testHeavi.setRealRep(realVec);
+	testHeavi.setRealRep(realVec.begin(), realVec.end());
 	testOneHeaviRepInit(testHeavi, 0.123);
 	// Test copy ctor
 	PixelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside> copyHeavi(testHeavi);

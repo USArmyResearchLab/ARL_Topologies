@@ -26,7 +26,6 @@
 #include <memory>
 #include <vector>
 #include <fstream>
-#include <list>
 
 namespace Topologies{
 class TopOptObjFun;
@@ -54,7 +53,7 @@ private:
 	void doElitism();
 	void doCrossover();
 	void doMutation();
-	void setTOR(const std::list<double>& x, TopOptRep& result) const;
+	void setTOR(const std::vector<double>& x, TopOptRep& result) const;
 	void outputResults() const;
 	void printBestChromos() const;
 	bool noneValid() const;
@@ -62,11 +61,12 @@ private:
 	void evaluateStatistics();
 	void fixOFVVecsForPareto();
 	void printPopGoalSpace() const;
-	void combineOFVVecs(std::vector<std::pair<std::vector<double>, bool> >& outVec) const;
+	void combineOFVVecs(std::vector<std::pair<std::vector<double>, bool>>& outVec) const;
 	void removeDuplicateBestChromos();
 	void updateBestChromosPareto();
 	void boundsCheckChromos();
 	void makeDiscreteChromos();
+	void addConstraintPenalties();
 	void addConstraintPenalties(const std::vector<TopOptRep*>& torVec);
 	void addConstraintPenalties(const TopOptRep* const pTOR, unsigned k);
 	// Data
@@ -83,10 +83,10 @@ private:
 	std::vector<double> goalWeights;
 	double sharingRadius;
 	// population
-	std::vector<std::list<double> > populationVec;
-	std::vector<std::pair<std::vector<double>, bool> > objFunValVec;
-	std::vector<std::list<double> > bestChromoVec;
-	std::vector<std::vector<double> > bestChromoOFVs;
+	std::vector<std::vector<double>> populationVec;
+	std::vector<std::pair<std::vector<double>, bool>> objFunValVec;
+	std::vector<std::vector<double>> bestChromoVec;
+	std::vector<std::vector<double>> bestChromoOFVs;
 	// Stats
 	double popAvg, popBest, bestEver, popStdDev;
 	unsigned numValid;

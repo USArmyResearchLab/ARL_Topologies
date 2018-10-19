@@ -27,25 +27,12 @@
 #include <vector>
 #include <fstream>
 #include <memory>
+#include <string>
 #include "topologiesdefs.h"
 #include "topoptrep.h"
 
 namespace Topologies{
 class TopOptObjFun;
-
-//! A namespace for converting STL containers to C-style arrays for MPI usage
-/*! Note that these will return arrays with a size of N+1, if the input vector is size N.
-*  The last element is a check sum, sum of the absolute values of the entries.
-*/
-namespace MPIHelperFunctions
-{
-	std::unique_ptr<Real[]> packData(const std::vector<Real>& realVec);
-	std::unique_ptr<int[]> packData(const std::vector<int>& intVec);
-	void unpackData(const int *const inArray, unsigned arraySize, std::vector<int>& intVec);
-	void unpackData(const Real *const inArray, unsigned arraySize, std::vector<Real>& realVec);
-	bool checkArrayCheckSum(const int *const inArray, unsigned arraySize);
-	bool checkArrayCheckSum(const Real *const inArray, unsigned arraySize);
-}
 
 //! A wrapper class for MPI parallization
 /*! This class is responsible for implementing all parallelization at the optimizer level.
@@ -66,7 +53,7 @@ public:
 	MPIHandler(MPI::Comm& inComm, unsigned inNumProcsPerEval, const TopOptObjFun* inTOOF, std::unique_ptr<TopOptRep> inTOR);
 	~MPIHandler();
 
-	//! Release slave nodes from servitude
+	//! Release slave nodes 
 	/*! For MPI parallelized runs, all nodes but 1 enter a loop where they receive flags from the root process
 	 *  and perform evaluations.  This will release them so that the program can exit.
 	 */
@@ -80,13 +67,20 @@ public:
 	//! Sets the current TopOptRep to that in `inTOR`.  The MPIHandler object assumes control of the `inTOR`.
 	void setTOR(std::unique_ptr<TopOptRep> inTOR) {myTOR = std::move(inTOR);}
 	//! Direct slave nodes to evalute a group of TopOptRep objects
-	void rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, std::vector<std::pair<double, bool>>& resVec, EvalFunction inef = efF);
+	template<typename Rep>
+	void rootBatchEvaluate(const std::vector<Rep>& TORvec, std::vector<std::pair<double, bool>>& resVec, EvalFunction inef = efF);
 	//! Direct slave nodes to evalute a group of TopOptRep objects, using parallel objective function evaluations
-	void rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, std::vector<std::pair<double, bool>>& resVec, unsigned numProcsPerEval, EvalFunction inef = efF);
+	template<typename Rep>
+	void rootBatchEvaluate(const std::vector<Rep>& TORvec, std::vector<std::pair<double, bool>>& resVec, 
+		unsigned numProcsPerEval, EvalFunction inef = efF);
 	//! Direct slave nodes to evalute a group of TopOptRep objects
-	void rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, std::vector<std::pair<std::vector<double>, bool>>& resVec, EvalFunction inef = efF);
+	template<typename Rep>
+	void rootBatchEvaluate(const std::vector<Rep>& TORvec, std::vector<std::pair<std::vector<double>, bool>>& resVec, 
+		EvalFunction inef = efF);
 	//! Direct slave nodes to evalute a group of TopOptRep objects, using parallel objective function evaluations
-	void rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, std::vector<std::pair<std::vector<double>, bool>>& resVec, unsigned numProcsPerEval, EvalFunction inef = efF);
+	template<typename Rep>
+	void rootBatchEvaluate(const std::vector<Rep>& TORvec, std::vector<std::pair<std::vector<double>, bool>>& resVec, 
+		unsigned numProcsPerEval, EvalFunction inef = efF);
 	//! Compute, in parallel, the finite difference approximation of the gradient of the current TopOptRep.
 	/*! This function specifies the continuous representation of a TopOptRep in vec1, and uses the values in diffVec to comptue
 	 *  a finite difference approximation of the gradient of the objective function with respect to each parameter in vec1
@@ -105,6 +99,8 @@ public:
 	void rootConvertTOR(std::unique_ptr<TopOptRep> inTOR, TORType inTORT);
 	//! Converts the current TopOptRep to that specified by `torName` and `inTOR`
 	void rootConvertTOR(std::unique_ptr<TopOptRep> inTOR);
+	//! Evaluates one TOR using a parallelized objective function and prints results to @param fileName
+	void rootEvaluateTORAndPrint(const TopOptRep* const pTOR, std::string const& fileName);
 	//! Returns whether or not this is the root node
 	bool amIRoot() const;
 	//! Returns the MPI rank
@@ -118,25 +114,34 @@ private:
 	bool isRunnable() const;
 	void rootFormGroups(unsigned locSize, unsigned numProcsPerEval);
 	void rootClearGroups();
-	void rootSendData(const TopOptRep* sendTOR, unsigned procID, MPI::Comm& communicator);
+	void rootSendString(std::string const& str, unsigned procID, MPI::Comm& communicator) const;
+	void rootSendData(const TopOptRep* sendTOR, unsigned procID, MPI::Comm& communicator) const;
+	void rootSendData(const std::vector<double>& realRep, unsigned procID, MPI::Comm& communicator) const;
 	void rootSendData(const std::vector<std::vector<double>>& realRep, 
-		const std::vector<std::vector<int>>& discreteRep, unsigned procID, MPI::Comm& communicator);
-	void rootSendDataToGroup(const TopOptRep* sendTOR, MPI::Comm& groupComm);
+		const std::vector<std::vector<int>>& discreteRep, unsigned procID, MPI::Comm& communicator) const;
+	void rootSendStringToGroup(std::string const& str,  MPI::Comm& groupComm) const;
+	void rootSendDataToGroup(const TopOptRep* sendTOR, MPI::Comm& groupComm) const;
+	void rootSendDataToGroup(const std::vector<double>& realRep, MPI::Comm& groupComm) const;
 	void rootSendDataToGroup(const std::vector<std::vector<double>>& realRep,
-		const std::vector<std::vector<int>>& discreteRep, MPI::Comm& groupComm);
-	void rootSetUpForEval(unsigned evalID, unsigned procID, EvalFunction inef, bool isST, MPI::Comm& communicator);
+		const std::vector<std::vector<int>>& discreteRep, MPI::Comm& groupComm) const;
+	void rootSetUpForEval(unsigned evalID, unsigned procID, EvalFunction inef, bool isST, MPI::Comm& communicator) const;
 	void rootSetUpGroupForEval(unsigned evalID, unsigned groupID, EvalFunction inef);
 	unsigned rootReceiveOneResult(std::vector<std::pair<std::vector<double>, bool>>& resVec);
 	unsigned rootReceiveOneResult(std::vector<std::pair<std::vector<double>, bool>>& resVec, unsigned& evalID);
-	void rootSendFlag(unsigned flag) const;
+	void rootSendFlag(unsigned flag);
 	void rootSendFlagToGroup(unsigned flag, MPI::Comm& groupComm) const;
 
 	void slaveFormGroups();
 	void slaveClearGroups();
-	unsigned slaveReceiveDataAndSetupTOR();
+	unsigned slaveReceiveEvalID();
+	void slaveReceiveDataAndSetupTOR();
+	std::string slaveReceiveString();
 	void slaveReceiveData(std::vector<std::vector<double>>& realRep, std::vector<std::vector<int>>& discreteRep);
+	void slaveEvaluate(unsigned flag);
 	void slaveEvaluateAndReturnResult(unsigned evalID, EvalFunction inef, bool isST);
+	void slavePrintResult();
 	void slaveReceiveNewTORParams();
+	void checkRunnable() const;
 
 	void setupNewTOR(TORType tortype, const std::vector<std::vector<double>>& realRep, 
 		const std::vector<std::vector<int>>& discreteRep);
@@ -155,6 +160,7 @@ private:
 		std::vector<std::vector<int>>& discreteRep, EvalFunction inef);
 	std::pair<std::vector<double>, bool> evaluate(EvalFunction inef);
 	std::pair<std::vector<double>, bool> evaluate(const TopOptRep* pTOR, EvalFunction inef);
+	std::pair<std::vector<double>, bool> evaluate(const std::vector<double>& realRep, EvalFunction inef);
 	std::pair<std::vector<double>, bool> evaluate(EvalFunction inef, MPI::Comm& inComm);
 	std::pair<std::vector<double>, bool> evaluate(const TopOptRep* pTOR, EvalFunction inef, MPI::Comm& inComm);
 
@@ -163,7 +169,7 @@ private:
 
 	const TopOptObjFun* myTOOF;
 	std::unique_ptr<TopOptRep> myTOR;
-	std::ofstream outFile;
+	mutable std::ofstream outFile;
 	bool debugPrint, shouldFinalize;
 	unsigned numProcsPerEval;
 	unsigned mpiSize, globalRank;

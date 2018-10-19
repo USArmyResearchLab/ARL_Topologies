@@ -26,6 +26,7 @@
 namespace Topologies{
 class TopOptRep;
 class TopOptObjFun;
+class MPIHandler;
 
 //! A class to handle writing output to a file
 /*! This class handles output writing as specified by a set of input parameters.
@@ -46,10 +47,12 @@ public:
 	 *  necessarily output anything, it depends on if it is time to output based on the specified
 	 *  output period.  
 	 */
-	void handleOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc, bool lastOutput) const;
+	void handleOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc,  bool lastOutput, 
+		MPIHandler* const mpih = nullptr) const;
 
 private:
-	void dispatchOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc, const std::string& curFileName) const;
+	void dispatchOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc, MPIHandler* const mpih, 
+		const std::string& curFileName) const;
 	void handleOutput2d(const TopOptRep* const torToPrint, const std::string& curFileName) const;
 	void handleOutput3d(const TopOptRep* const torToPrint, const std::string& curFileName) const;
 	void stripFileExtension();

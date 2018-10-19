@@ -24,6 +24,7 @@
 #include "postprocess.h"
 #include "topoptobjfun.h"
 #include "tomesh.h"
+#include "mpihandler.h"
 #include <memory>
 
 namespace Topologies{
@@ -44,7 +45,8 @@ OutputHandler::OutputHandler(const InputLoader::Output& inputParams) :
 		overwrite = true; // Add all output to 1 file
 }
 
-void OutputHandler::handleOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc, bool lastOutput) const
+void OutputHandler::handleOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc, bool lastOutput, 
+	MPIHandler* const mpih) const
 {
 	// Generate appropriate file name
 	if(lastOutput && outputAtFin)
@@ -55,7 +57,7 @@ void OutputHandler::handleOutput(const TopOptRep* const torToPrint, const TopOpt
 		else
 			curFileName += getFileExtensionString();
 		// Generate output file
-		dispatchOutput(torToPrint, toofFunc, curFileName);
+		dispatchOutput(torToPrint, toofFunc, mpih, curFileName);
 	}
 	else if(!lastOutput && outputStep && (++kout % outputPeriod) == 0)
 	{
@@ -65,15 +67,20 @@ void OutputHandler::handleOutput(const TopOptRep* const torToPrint, const TopOpt
 		else
 			curFileName += getFileExtensionString();
 		// Generate output file
-		dispatchOutput(torToPrint, toofFunc, curFileName);
+		dispatchOutput(torToPrint, toofFunc, mpih, curFileName);
 	}
 }
 
 void OutputHandler::dispatchOutput(const TopOptRep* const torToPrint, const TopOptObjFun* const toofFunc, 
-																	const std::string& curFileName) const
+																	MPIHandler* const mpih, const std::string& curFileName) const
 {
 	if(type == otObjFunRes)
-		toofFunc->printResult(*torToPrint, curFileName);
+	{
+		if(mpih == nullptr)
+			toofFunc->printResult(*torToPrint, curFileName);
+		else
+			mpih->rootEvaluateTORAndPrint(torToPrint, curFileName);
+	}
 	else
 	{
 		if(torToPrint->getDimension() == 2)

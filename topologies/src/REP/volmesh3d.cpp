@@ -131,13 +131,12 @@ void VolMesh3D<PenaltyFunc, ProjectionFunc>::finishSetup()
 	}
 	// Set up optimization value array
 	std::size_t numUnks = VM::vmTORSpec.torUnknownLocation == ulNode ? VM::upMesh->getNumNodes() : VM::upMesh->getNumElements();
-	VM::pixelArray = std::vector<double>(numUnks, VM::threshold);
-	// Set up filter
-	VM::upFilt = std::unique_ptr<FilterBase>(new Filter3D<>(VM::upMesh.get(), VM::vmTORSpec.torUnknownLocation == ulElement));
+	TOR::realOptVals = std::vector<double>(numUnks, VM::threshold);
 	// Set up fixed value blocks
 	VM::initFixedVals();
 	// Set up filter derivative, filter is linear so only need to do it once
-	VM::computeDiffFilt();
+	std::unique_ptr<FilterBase> upFilt = constructFilter();
+	VM::computeDiffFilt(*upFilt);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -152,12 +151,18 @@ std::unique_ptr<TopOptRep> VolMesh3D<PenaltyFunc, ProjectionFunc>::clone() const
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
+std::unique_ptr<FilterBase> VolMesh3D<PenaltyFunc, ProjectionFunc>::constructFilter() const
+{
+	return std::unique_ptr<FilterBase>(new Filter3D<>(VM::upMesh.get(), VM::vmTORSpec.torUnknownLocation == ulElement));
+}
+
+template <typename PenaltyFunc, typename ProjectionFunc>
 void VolMesh3D<PenaltyFunc, ProjectionFunc>::setFixedValsNodal(std::vector<double>& inVec) const
 {
 	if(VM::fixedBlockVec.empty())
 		return;
 	// Set up a vector of element-based fixed values
-	std::vector<double> fixedVals(VM::pixelArray.size(), 0.);
+	std::vector<double> fixedVals(TOR::realOptVals.size(), 0.);
 	VM::setFixedVals(fixedVals);
 	std::vector<double> fvmask = VM::getFixedValElemMask();
 	// Interpolate those onto the nodes
@@ -220,9 +225,9 @@ std::vector<double> VolMesh3D<PenaltyFunc, ProjectionFunc>::getNodalDensities() 
 	if(VM::vmTORSpec.torUnknownLocation == ulNode)
 	{
 		// Nodal
-		std::vector<double> res(VM::pixelArray.size());
+		std::vector<double> res(TOR::realOptVals.size());
 		ProjectionFunc projf(VM::projParams);
-		std::transform(VM::pixelArray.begin(), VM::pixelArray.end(), res.begin(), projf);
+		std::transform(TOR::realOptVals.begin(), TOR::realOptVals.end(), res.begin(), projf);
 		setFixedValsNodal(res);
 		return res;
 	}
@@ -334,7 +339,7 @@ void VolMesh3D<PenaltyFunc, ProjectionFunc>::prune()
 template <typename PenaltyFunc, typename ProjectionFunc>
 void VolMesh3D<PenaltyFunc, ProjectionFunc>::getDataSize(std::vector<std::size_t>& sizes) const
 {
-	sizes = {VM::pixelArray.size(), 1, 1};
+	sizes = {TOR::realOptVals.size(), 1, 1};
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>

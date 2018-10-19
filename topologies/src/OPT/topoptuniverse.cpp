@@ -162,13 +162,12 @@ void TopOptUniverse::setupInitialGuess(TopOptRep* const initialGuess) const
 
 void TopOptUniverse::runProblem()
 {
-	std::unique_ptr<TopOptRep> initialGuess = torInterface->clone();
-	setupInitialGuess(initialGuess.get());
+	setupInitialGuess(torInterface.get());
 	if(upMPIH)
 	{
 		if(upMPIH->amIRoot())
 		{
-			result = toOptimizer->optimize(*initialGuess);
+			result = toOptimizer->optimize(*torInterface);
 			handleOutput(result.get());
 		}
 		else
@@ -176,7 +175,7 @@ void TopOptUniverse::runProblem()
 	}
 	else
 	{
-		result = toOptimizer->optimize(*initialGuess);
+		result = toOptimizer->optimize(*torInterface);
 		handleOutput(result.get());
 	}
 }
@@ -184,7 +183,7 @@ void TopOptUniverse::runProblem()
 void TopOptUniverse::handleOutput(const TopOptRep* const result) const
 {
 	for(std::size_t k = 0; k < upOutputVec.size(); ++k)
-		upOutputVec[k]->handleOutput(result, toofFunc, true);
+		upOutputVec[k]->handleOutput(result, toofFunc, true, upMPIH.get());
 }
 
 std::unique_ptr<TopOptRep> TopOptUniverse::getResult() 

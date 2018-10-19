@@ -249,6 +249,56 @@ namespace HelperNS
 	inline bool greaterThan1 (double val) { return ( val > 1.); }
 	//! Returns a bool indicating whether or not the argument is less than 0
 	inline bool lessThan0 (double val) {return (val < 0.); }
+	// Vector helpers
+	//! A basic sparse matrix storage class
+	class SparseMatrix
+	{
+		public:
+			//! Pair representing a column index and entry value
+			typedef std::pair<std::size_t, double> ColPair;
+			//! Sparse row representation
+			typedef std::vector<ColPair> SparseRow;
+			//! Helper function to retrieve the column index
+			static std::size_t index(ColPair const& cp) {return cp.first;}
+			//! Helper function to retrieve the value
+			static double& value(ColPair& cp) {return cp.second;}
+			//! Helper function to retrieve the value
+			static double value(ColPair const& cp) {return cp.second;}
+			//! Helper function to construct an empty row
+			static SparseRow make_row() {return SparseRow();}
+			//! Helper function to construct a row with @param ncol column entries
+			static SparseRow make_row(std::size_t ncol) {return SparseRow(ncol);}
+			//! Helper function to construct a row with one column entry at index @param col and value @param val
+			static SparseRow make_row_with_entry(std::size_t col, double val) {return SparseRow(1, std::make_pair(col, val));}
+			//! Helper function to construct a column entry
+			static ColPair make_entry(std::size_t col, double val) {return std::make_pair(col, val);} 
+		public:
+			SparseMatrix() {}
+			explicit SparseMatrix(std::size_t nrows) : m_mat(nrows){}
+			//! Matrix vector multiply
+			std::vector<double> operator*(std::vector<double> const& vec) const;
+			//! Transpose of matrix times vector
+			std::vector<double> transposeTimes(std::vector<double> const& vec, std::size_t ncols) const;
+			//! Row access
+			SparseRow& row(std::size_t row) {return m_mat[row];}
+			//! Const row access
+			SparseRow const& row(std::size_t row) const {return m_mat[row];}
+			//! Matrix entry const access
+			double operator()(std::size_t row, std::size_t col) const;
+			//! Iterator access
+			std::vector<SparseRow>::iterator begin() {return m_mat.begin();}
+			std::vector<SparseRow>::iterator end() {return m_mat.end();}
+			std::vector<SparseRow>::const_iterator begin() const {return m_mat.cbegin();}
+			std::vector<SparseRow>::const_iterator end() const {return m_mat.cend();}
+			//! Add entry to row
+			void addEntry(std::size_t krow, std::size_t kcol, double val) {row(krow).emplace_back(kcol, val);}
+			//! Number of rows
+			std::size_t size() const {return m_mat.size();}
+			//! Is an empty matrix
+			bool empty() const {return m_mat.empty();}
+		private:
+			std::vector<SparseRow> m_mat;
+	};
 	//! Norm of vector
 	inline double norm(const std::vector<double>& v)
 	{

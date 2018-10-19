@@ -68,12 +68,14 @@ public:
 	//! Returns TopOptRep implementation's class name: voxel
 	static std::string getClassName() {return "voxel";}
 	//@}
-
+protected:
+	virtual std::unique_ptr<FilterBase> constructFilter() const;
 private:
 	void finishSetup();
 	void refineElementUnknowns();
 	void refineNodalUnknowns();
 
+	typedef TopOptRep TOR;
 	typedef VolMesh<PenaltyFunc, ProjectionFunc> VM;
 	typedef VolMesh3D<PenaltyFunc, ProjectionFunc> VM3D;
 

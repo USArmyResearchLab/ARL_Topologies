@@ -76,7 +76,6 @@ public:
 	//@}
 	//! @name Data access
 	//@{
-	virtual void setRealRep(const std::vector<double>& newvals);
 	virtual void setDiscreteRep(const std::vector<int>& newvals);
 	virtual void setMPIRep(const std::vector<std::vector<int> >& discreteVars, const std::vector<std::vector<double> >& realVars);
 	virtual void getRealRep(std::vector<double>& realVec) const;
@@ -88,7 +87,10 @@ public:
 	virtual unsigned getDimension() const;
 	virtual double computeVolumeFraction() const;
 	virtual std::vector<double> computeGradVolumeFraction() const {return std::vector<double>();}
-	virtual std::vector<std::map<std::size_t, double>> diffRep() const {return std::vector<std::map<std::size_t, double>>();}
+	virtual std::vector<double> applyDiffRep(std::vector<double> const& elemGrad, bool usePenalization = true) const 
+		{return std::vector<double>();}
+	virtual HelperNS::SparseMatrix diffRep(bool usePenalization = true) const {return HelperNS::SparseMatrix();}
+	virtual bool hasAnalyticalDerivative() const {return false;}
 	virtual void getDefiningParameters(std::vector<std::vector<int> >& discreteParams,
 		std::vector<std::vector<double> >& realParams) const;
 	virtual std::string getName() const {return getClassName();}
@@ -99,8 +101,9 @@ public:
 	//@{
 	virtual void filterData(std::vector<double>& valVec, double radius) const;
 	virtual void filterData(double radius);
-	virtual void boundsCheck(std::vector<double>& realVec) const;
 	//@}
+protected:
+	virtual void updateRealRep();
 private:
 	Nef_polyhedron_2 getNefPoly() const;
 	Nef_polyhedron_2 getNefPolyWithBoundaries() const;

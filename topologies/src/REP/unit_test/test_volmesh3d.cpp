@@ -23,6 +23,7 @@
 #include "volmesh3d.h"
 #include "torfactory.h"
 #include "meshtestns.h"
+#include "helper.h"
 #include "catch.hpp"
 #include <memory>
 
@@ -172,7 +173,7 @@ TEST_CASE("Testing creation of VolMesh3D class","[VolMesh3D]")
 	// Test assignment operator
 	testVM3D = VolMesh3D<>(tortMesh3D, discreteParams, realParams);
 	std::vector<double> realVec(56, 0.123);
-  testVM3D.setRealRep(realVec);
+  testVM3D.setRealRep(realVec.begin(), realVec.end());
 	testOneVM3DInit(testVM3D, 0.123);
 	// Test copy ctor
 	VolMesh3D<> copyVM3D(testVM3D);
@@ -210,7 +211,7 @@ TEST_CASE("Testing creation of HeavisideMesh3D","[HeavisideMesh3D]")
 	testHeavi = VolMesh3D<HelperNS::powPenalMin, HelperNS::thresholdHeaviside>(tortHeavisideMesh3D, discreteParams, realParams);
 	upMesh = testHeavi.get3DVolumeMesh();
 	std::vector<double> realVec(upMesh->getNumNodes(), 0.123);
-	testHeavi.setRealRep(realVec);
+	testHeavi.setRealRep(realVec.begin(), realVec.end());
 	INFO("Assignment operator and setRealRep");
 	testOneHeaviRepInit(testHeavi, 0.123);
 	// Test copy ctor
@@ -226,7 +227,7 @@ TEST_CASE("Testing creation of HeavisideMesh3D","[HeavisideMesh3D]")
 void testDiff(TopOptRep& testTOR)
 {
 	// Test diffs vs. finite difference approximation
-	std::vector<std::map<std::size_t, double>> df = testTOR.diffRep();
+	HelperNS::SparseMatrix df = testTOR.diffRep();
 	std::vector<double> realVec;
 	testTOR.getRealRep(realVec);
 	REQUIRE(realVec.size() == df.size());
@@ -239,21 +240,20 @@ void testDiff(TopOptRep& testTOR)
 		double tmpk = realVec[k];
 		realVec[k] += sqrtEta;
 		double step = realVec[k] - tmpk;
-		testTOR.setRealRep(realVec);
+		testTOR.setRealRep(realVec.begin(), realVec.end());
 		// Get new mesh
 		std::unique_ptr<TOMesh> upMeshFD = testTOR.get3DVolumeMesh();
 		REQUIRE(upMeshFD);
 		// Each mesh element should match the values in df:
 		for(std::size_t ke = 0; ke < upMesh->getNumElements(); ++ke)
 		{
-			auto it = df[k].find(ke);
-			double exact = it != df[k].end() ? it->second : 0.;
+			double exact = df(k, ke);
 			double fdapprox = (upMeshFD->getOptVal(ke) - upMesh->getOptVal(ke))/step;
 			REQUIRE(exact == Approx(fdapprox));
 		}
 		// Set back to original value
 		realVec[k] = tmpk;
-		testTOR.setRealRep(realVec);
+		testTOR.setRealRep(realVec.begin(), realVec.end());
 	}
 }
 
@@ -272,14 +272,14 @@ void testVFDiff(TopOptRep& testTOR)
 		double tmpk = realVec[k];
 		realVec[k] += sqrtEta;
 		double step = realVec[k] - tmpk;
-		testTOR.setRealRep(realVec);
+		testTOR.setRealRep(realVec.begin(), realVec.end());
 		double vf1 = testTOR.computeVolumeFraction();
 		// Compute estimate and compare
 		double fdapprox = (vf1 - vf0)/step;
 		REQUIRE(vfGrad[k] == Approx(fdapprox));
 		// Set back to original value
 		realVec[k] = tmpk;
-		testTOR.setRealRep(realVec);
+		testTOR.setRealRep(realVec.begin(), realVec.end());
 	}
 }
 

@@ -162,10 +162,10 @@ Tr_GT::FT Filter2D<WeightFunc>::operator()(Tr_GT::Point_2 p) const
 }
 
 template <class WeightFunc>
-std::vector<std::map<std::size_t, double>> Filter2D<WeightFunc>::diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const
+HelperNS::SparseMatrix Filter2D<WeightFunc>::diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const
 {
 	WeightFunc wf(rad);
-	std::vector<std::map<std::size_t, double>> res(ptVec.size());
+	HelperNS::SparseMatrix res(ptVec.size());
 	for(std::size_t k = 0; k < filtPts.size(); ++k)
 	{
 		std::vector<PS_Vertex_handle> ptsInRange;
@@ -191,10 +191,7 @@ std::vector<std::map<std::size_t, double>> Filter2D<WeightFunc>::diffFilter(cons
 		}
 		// Store derivative
 		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
-		{
-			std::map<std::size_t, double>& curRes = res[idVec[k2]];
-			curRes.emplace_hint(curRes.end(), k, fVec[k2]/normVal);
-		}
+			res.addEntry(idVec[k2], k, fVec[k2]/normVal);
 	}
 	return res;
 }
@@ -210,3 +207,4 @@ void Filter2D<WeightFunc>::getPointsInCircle(const Point_2_base& center, double 
 template class Filter2D<HelperNS::linearHat>;
 template class Filter2D<HelperNS::constantFunction>;
 }//namespace
+

@@ -190,11 +190,10 @@ double Filter3D<WeightFunc>::filterOnePoint(const Point_3_base& pt, double rad, 
 }
 
 template <class WeightFunc>
-std::vector<std::map<std::size_t, double>> Filter3D<WeightFunc>::diffFilter(const std::vector<Point_3_base>& filtPts, 
-	double rad) const
+HelperNS::SparseMatrix Filter3D<WeightFunc>::diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const
 {
 	WeightFunc wf(rad);
-	std::vector<std::map<std::size_t, double>> res(ptVec.size());
+	HelperNS::SparseMatrix res(ptVec.size());
 	for(std::size_t k = 0; k < filtPts.size(); ++k)
 	{
 		std::vector<Point_3_base> ptsInRange;
@@ -222,10 +221,7 @@ std::vector<std::map<std::size_t, double>> Filter3D<WeightFunc>::diffFilter(cons
 		}
 		// Compute derivative
 		for(std::size_t k2 = 0; k2 < ptsInRange.size(); ++k2)
-		{
-			std::map<std::size_t, double>& curRes = res[idVec[k2]];
-			curRes.emplace_hint(curRes.end(), k, fVec[k2]/normVal);
-		}
+			res.addEntry(idVec[k2], k, fVec[k2]/normVal);
 	}
 	return res;
 }

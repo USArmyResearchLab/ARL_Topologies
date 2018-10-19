@@ -1,4 +1,4 @@
-set (TOLIB_SOURCE ${TOLIB_SOURCE}
+set (OPTLIB_SOURCE ${OPTLIB_SOURCE}
 	${CMAKE_CURRENT_SOURCE_DIR}/topopt.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/geneticoperators.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/topoptfactory.cpp

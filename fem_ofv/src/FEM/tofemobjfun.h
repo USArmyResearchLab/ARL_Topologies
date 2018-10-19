@@ -55,27 +55,10 @@ public:
 	//! Computes the gradient and the objective function value
 	virtual void fAndG(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
 											std::pair<std::vector<double>, bool>& gRes) const; 
-#ifdef USE_MPI
-	//! This overloaded parentheses operator takes an MPI communicator for parallelized objective functions, though it is not implemented here.
-	virtual std::pair<double, bool> operator()(const Topologies::TopOptRep& inTOR, MPI::Comm& communicator) const;
-	//! Overloaded f with MPI communicator
-	virtual void f(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-	//! Overloaded c with MPI communicator
-	virtual void c(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-	//! Function g computes the gradient of the objective function
-  virtual void g(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-	//! Computes the gradient of the constraints
-  virtual void gc(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-	//! Computes the gradient and the objective function
-	virtual void fAndG(const Topologies::TopOptRep& inTOR, std::pair<std::vector<double>, bool>& fRes,
-											std::pair<std::vector<double>, bool>& gRes, MPI::Comm& communicator) const;
-#endif
 private:
 	std::vector<ExoBC> generateExoBCVec(const Topologies::TOMesh* const inMesh, std::size_t kLoad) const;
 	std::unique_ptr<FEMProblem> setupAndSolveFEM(const Topologies::TopOptRep& inTOR, std::size_t kLoad) const;
-	std::unique_ptr<Topologies::TOMesh> getTOMesh(const Topologies::TopOptRep& inTOR) const;
-	void g(const Topologies::TopOptRep& inTOR, const std::vector<std::map<std::size_t, double>>& dF, 
-		std::pair<std::vector<double>, bool>& outRes) const;
+private:
 	unsigned dim;
 	Topologies::GenericMaterial baseMat;
 	double maxDisplacement, volfrac;

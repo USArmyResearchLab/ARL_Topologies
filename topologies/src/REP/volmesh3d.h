@@ -86,6 +86,8 @@ public:
 	static std::string getClassName() {return "volmesh3d";}
 	//@}
 
+protected:
+	virtual std::unique_ptr<FilterBase> constructFilter() const;
 private:
 	void finishSetup();
 	void setOptVals(const std::vector<double>& optValVec, TOMesh3D* pTOM) const;
@@ -95,6 +97,7 @@ private:
 	std::pair<double,double> getElementVolumeRange() const;
 	void setFixedValsNodal(std::vector<double>& inVec) const;
 
+	typedef TopOptRep TOR;
 	typedef VolMesh<PenaltyFunc, ProjectionFunc> VM;
 protected:
 	std::vector<double> getNodalDensities() const;

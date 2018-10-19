@@ -80,7 +80,7 @@ inline
 void TopOpt::handleOutput(const TopOptRep* const torToPrint) const
 {
 	for(unsigned k = 0; k < outputVec.size(); ++k)
-		outputVec[k]->handleOutput(torToPrint, pObjFun, false);
+		outputVec[k]->handleOutput(torToPrint, pObjFun, false, pMPIH);
 }
 }
 #endif

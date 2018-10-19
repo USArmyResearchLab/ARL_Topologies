@@ -63,8 +63,6 @@ public:
 	//@}
 	//! @name Data access
 	//@{
-	virtual void setRealRep(const std::vector<double>& newvals) 
-	{assert(newvals.size() == 2); optValx = newvals[0]; optValy = newvals[1];}
 	virtual void setDiscreteRep(const std::vector<int>& newvals) 
 	{assert(newvals.size() == 2); optValx = (double)newvals[0]; optValy = (double)newvals[1];}
 	virtual void setMPIRep(const std::vector<std::vector<int> >& discreteVars, const std::vector<std::vector<double> >& realVars)
@@ -80,7 +78,9 @@ public:
 	virtual unsigned getDimension() const {return 2;}
 	virtual double computeVolumeFraction() const {return optValx;}
 	virtual std::vector<double> computeGradVolumeFraction() const {return std::vector<double>(2, 1.);}
-	virtual std::vector<std::map<std::size_t, double>> diffRep() const {return std::vector<std::map<std::size_t, double>>();}
+	virtual HelperNS::SparseMatrix diffRep(bool usePenalization = true) const {return HelperNS::SparseMatrix();}
+	virtual std::vector<double> applyDiffRep(std::vector<double> const& elemGrad, bool usePenalization = true) const {return elemGrad;}
+	virtual bool hasAnalyticalDerivative() const {return false;}
 	virtual double getDataMagnitude() const {return 1.;}
 	virtual void getDefiningParameters(std::vector<std::vector<int> >& discreteParams,
 		std::vector<std::vector<double> >& realParams) const {}
@@ -96,6 +96,9 @@ public:
 	//@}
 
 protected:
+	virtual void updateRealRep() 
+	{assert(realOptVals.size() == 2); optValx = realOptVals[0]; optValy = realOptVals[1];}
+
 	double optValx, optValy;
 
 private:

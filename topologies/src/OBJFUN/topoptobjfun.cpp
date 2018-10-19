@@ -55,7 +55,7 @@ void TopOptObjFun::g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool
     double tempJ = x[j];
     x[j] += stepSizeJ;
     stepSizeJ = x[j] - tempJ;
-		locTOR->setRealRep(x);
+		locTOR->setRealRep(x.begin(), x.end());
     std::pair<double, bool> fj = (*this)(*locTOR);
 		if(debugPrint)
 		{
@@ -98,7 +98,7 @@ void TopOptObjFun::forwardDiff(const TopOptRep& inTOR, std::pair<std::vector<dou
 		stepSizes[j] = y[j] - tempJ;
 		torUPVec.push_back(inTOR.clone());
 		torVec[j + 1] = torUPVec.back().get();
-		torVec[j + 1]->setRealRep(y);
+		torVec[j + 1]->setRealRep(y.begin(), y.end());
 		y[j] = tempJ;
 	}
 	// MPI evaluate all TORs
@@ -167,13 +167,13 @@ void TopOptObjFun::centeredDiff(const TopOptRep& inTOR, std::pair<std::vector<do
 		double tempJp = x[j];
 		torUPVec.push_back(inTOR.clone());
 		torVec[2*j] = torUPVec.back().get();
-		torVec[2*j]->setRealRep(x);
+		torVec[2*j]->setRealRep(x.begin(), x.end());
 		// Backward half
 		x[j] = tempJ - stepSizeJ;
 		stepSizes[j] = tempJp - x[j];
 		torUPVec.push_back(inTOR.clone());
 		torVec[2*j + 1] = torUPVec.back().get();
-		torVec[2*j + 1]->setRealRep(x);
+		torVec[2*j + 1]->setRealRep(x.begin(), x.end());
 		x[j] = tempJ;
 	}
   // MPI evaluate all TORs
@@ -211,7 +211,7 @@ void TopOptObjFun::gc(const TopOptRep& inTOR, std::pair<std::vector<double>, boo
 		double tempJ = x[j];
 		x[j] += stepSizeJ;
 		stepSizeJ = x[j] - tempJ;
-		locTOR->setRealRep(x);
+		locTOR->setRealRep(x.begin(), x.end());
 		std::pair<std::vector<double>, bool> cj;
 		this->c(*locTOR, cj);
 		if(!cj.first.empty())

@@ -134,7 +134,7 @@ TEST_CASE("Testing creation of CSGTreeRep class, using affine opt","[CSGTreeRep]
 	std::vector<double> realVec;
 	testPix.getRealRep(realVec);
 	realVec[0] = realVec[3] = realVec[6] = realVec[9] = realVec[12] = 1.;
-  testPix.setRealRep(realVec);
+  testPix.setRealRep(realVec.begin(), realVec.end());
 	INFO("Assignment operator");
 	testOneCSGAffine(testPix, 0.2573751256);
 	// Test copy ctor
@@ -145,7 +145,7 @@ TEST_CASE("Testing creation of CSGTreeRep class, using affine opt","[CSGTreeRep]
 	copyPix.getRealRep(realVec);
 	realVec = std::vector<double>(realVec.size(), 1.);
 	realVec[0] = realVec[3] = realVec[6] = realVec[9] = realVec[12] = 0.001;
-	copyPix.setRealRep(realVec);
+	copyPix.setRealRep(realVec.begin(), realVec.end());
 	INFO("Moving polygons");
 	testOneCSGAffine(copyPix, 1.);
 }
@@ -177,7 +177,7 @@ TEST_CASE("Testing creation of CSGTreeRep class, using point opt","[CSGTreeRep]"
 	realVec[0] = realVec[1] = realVec[3] = realVec[6] = 0.;
 	realVec[2] = realVec[4] = realVec[5] = realVec[7] = 1.;
 //	MeshTestNS::printTOMesh(*(testCSG.get2DMesh()));
-	testCSG.setRealRep(realVec);
+	testCSG.setRealRep(realVec.begin(), realVec.end());
 	testCSG.getRealRep(realVec);
 //	std::cout << "vals = [";
  // for(auto it = realVec.begin(); it != realVec.end(); ++it)

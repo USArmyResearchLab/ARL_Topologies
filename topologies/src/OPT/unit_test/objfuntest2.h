@@ -37,18 +37,9 @@ public:
 	virtual std::pair<double, bool> operator()(const TopOptRep& inTOR) const;
 	virtual void f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
 	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
-	virtual void g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPIHandler* pMPIH) const 
-	{g(inTOR, outRes);}
   virtual void g(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
 
   virtual void gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes) const;
-  virtual void gc(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPIHandler* pMPIH) const 
-	{gc(inTOR, outRes);}
-#ifdef USE_MPI
-	virtual std::pair<double, bool> operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const;
-	virtual void f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-	virtual void c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const;
-#endif
 	virtual void printResult(const TopOptRep& inTOR, const std::string& fileName) const {}
 	bool gradCheck(const TopOptRep& inTOR) const;
 
@@ -125,25 +116,6 @@ bool TOTestObjFun2::gradCheck(const TopOptRep& inTOR) const
 	return res;
 }
 
-#ifdef USE_MPI
-inline
-std::pair<double, bool> TOTestObjFun2::operator()(const TopOptRep& inTOR, MPI::Comm& communicator) const
-{
-	return (*this)(inTOR);
-}
-
-inline
-void TOTestObjFun2::f(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	f(inTOR, outRes);
-}
-
-inline
-void TOTestObjFun2::c(const TopOptRep& inTOR, std::pair<std::vector<double>, bool>& outRes, MPI::Comm& communicator) const
-{
-	c(inTOR, outRes);
-}
-#endif
 }
 
 extern "C" Topologies::TopOptObjFun* create(const std::string& inpFileName)

@@ -34,6 +34,7 @@ PixelRep<PenaltyFunc, ProjectionFunc>::PixelRep(TORType inTORT, const InputLoade
 	ny(inputParams.getDiscSizes(1)),
 	myMET(inputParams.getMET())
 {
+	VM::useInterpolatoryFilt = myMET == metTri && VM::vmTORSpec.torUnknownLocation == ulElement && VM::filtRad == 0.;
 	finishSetup();
 }
 
@@ -44,12 +45,13 @@ PixelRep<PenaltyFunc, ProjectionFunc>::PixelRep(TORType inTORT, const std::vecto
 	bool error = discreteParams.size() != 2;
 	if(!error)
 	{
-		error = discreteParams[0].size() != 3;
+		error = discreteParams[0].size() != 4;
 		if(!error)
 		{
 			nx = discreteParams[0][0];
 			ny = discreteParams[0][1];
 			myMET = (MeshElementType)discreteParams[0][2];
+			VM::useInterpolatoryFilt = (bool)discreteParams[0][3];
 		}
 		error |= discreteParams[1].size() != VM::vmTORSpec.size();
 		if(!error)
@@ -86,21 +88,22 @@ void PixelRep<PenaltyFunc, ProjectionFunc>::finishSetup()
 	std::vector<double> initArray = std::vector<double>(nelems, initVal);
 	VM::upMesh = CartesianMesher::generateMesh(myMET, nx, ny, width, height, initArray);
 	if(VM::vmTORSpec.torUnknownLocation == ulElement)
-		VM::pixelArray = initArray;
+		TOR::realOptVals = initArray;
 	else
-		VM::pixelArray = std::vector<double>(VM::upMesh->getNumNodes(), initVal);
-	VM::upFilt = std::unique_ptr<FilterBase>(new Filter2D<>(nx, ny, width, height, VM::vmTORSpec.torUnknownLocation == ulElement));
+		TOR::realOptVals = std::vector<double>(VM::upMesh->getNumNodes(), initVal);
 	// For triangular meshes, there is not a 1-to-1 map between unknowns and elements
   // A filter is used to provide this functionality
 	// Note that for highly skewed meshes (dx != dy), this may be slightly incorrect as it will average close values
-	if(myMET == metTri && VM::vmTORSpec.torUnknownLocation == ulElement && VM::filtRad == 0.)
+	std::unique_ptr<FilterBase> upFilt;
+	if(VM::useInterpolatoryFilt)
 	{
-		VM::upDataFilt = std::move(VM::upFilt);	
-		VM::upFilt = std::unique_ptr<FilterBase>(new Filter2D<HelperNS::constantFunction>(nx, ny, 
+		upFilt = std::unique_ptr<FilterBase>(new Filter2D<HelperNS::constantFunction>(nx, ny, 
 			width, height, VM::vmTORSpec.torUnknownLocation == ulElement));
 		double dx = width/(double)nx, dy = height/(double)ny;
 		VM::filtRad = 0.5*MAX(dx, dy);
 	}
+	else
+		upFilt = constructFilter();
 	// Set up boundaries
 	VM2D::boundaryVV.resize(1);
 	VM2D::boundaryVV[0] = {Mesh_Segment_2(Point_2_base(0., 0.), Point_2_base(width, 0.)),
@@ -108,7 +111,7 @@ void PixelRep<PenaltyFunc, ProjectionFunc>::finishSetup()
 									 Mesh_Segment_2(Point_2_base(width, height), Point_2_base(0., height)),
 									 Mesh_Segment_2(Point_2_base(0., height), Point_2_base(0., 0.))};
 	// Compute Jacobian
-	VM::computeDiffFilt();
+	VM::computeDiffFilt(*upFilt);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -122,6 +125,12 @@ std::unique_ptr<TopOptRep> PixelRep<PenaltyFunc, ProjectionFunc>::clone() const
 	return std::unique_ptr<TopOptRep>(new PixelRep(*this));
 }
 
+template <typename PenaltyFunc, typename ProjectionFunc>
+std::unique_ptr<FilterBase> PixelRep<PenaltyFunc, ProjectionFunc>::constructFilter() const
+{
+	return std::unique_ptr<FilterBase>(new Filter2D<>(nx, ny, width, height, VM::vmTORSpec.torUnknownLocation == ulElement));
+}
+
 // Modify
 template <typename PenaltyFunc, typename ProjectionFunc>
 void PixelRep<PenaltyFunc, ProjectionFunc>::refine()
@@ -133,15 +142,18 @@ void PixelRep<PenaltyFunc, ProjectionFunc>::refine()
 	nx *= 2;
 	ny *= 2;
 	VM::upMesh = CartesianMesher::generateMesh(myMET, nx, ny, width, height, std::vector<double>(nx*ny, 1.));
-	VM::upFilt = std::unique_ptr<FilterBase>(new Filter2D<>(nx, ny, width, height, VM::vmTORSpec.torUnknownLocation == ulElement));
 	if(VM::upDataFilt)
+		VM::upDataFilt.release();
+	std::unique_ptr<FilterBase> upFilt;
+	if(VM::useInterpolatoryFilt)
 	{
-		VM::upDataFilt = std::move(VM::upFilt);
-		VM::upFilt = std::unique_ptr<FilterBase>(new Filter2D<HelperNS::constantFunction>(nx, ny,	width, height, 
+		upFilt = std::unique_ptr<FilterBase>(new Filter2D<HelperNS::constantFunction>(nx, ny,	width, height, 
 			VM::vmTORSpec.torUnknownLocation == ulElement));
 		VM::filtRad *= 0.5;
 	}
-	VM::computeDiffFilt();
+	else
+		upFilt = std::unique_ptr<FilterBase>(new Filter2D<>(nx, ny, width, height, VM::vmTORSpec.torUnknownLocation == ulElement));
+	VM::computeDiffFilt(*upFilt);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -155,13 +167,13 @@ void PixelRep<PenaltyFunc, ProjectionFunc>::refineElementUnknowns()
 	{
 		for(std::size_t kx = 0; kx < 2*nx; ++kx)
 		{
-			newPixelArray[ky*2*nx + kx] = VM::pixelArray[kyp*nx + kxp];
+			newPixelArray[ky*2*nx + kx] = TOR::realOptVals[kyp*nx + kxp];
 			kxp += kx % 2;
 		}
 		kxp = 0;
 		kyp += ky % 2;
 	}
-	VM::pixelArray = newPixelArray;
+	TOR::realOptVals = newPixelArray;
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -172,7 +184,7 @@ void PixelRep<PenaltyFunc, ProjectionFunc>::refineNodalUnknowns()
 	// Split up into 3 parts: new nodes along vertical lines,
 	//  new nodes along horizontal lines, and new nodes within old elements
 	// First, horizontal lines
-	std::vector<double>& locPA = VM::pixelArray;
+	std::vector<double>& locPA = TOR::realOptVals;
 	for(std::size_t ky = 0; ky < ny + 1; ++ky)
 		for(std::size_t kx = 0; kx < nx; ++kx)
 			newPixelArray[2*ky*(2*nx+1) + 2*kx + 1] = 0.5*(locPA[(nx+1)*ky + kx] + locPA[(nx+1)*ky + kx + 1]);
@@ -216,7 +228,7 @@ void PixelRep<PenaltyFunc, ProjectionFunc>::getDefiningParameters(std::vector<st
 {
 	// Get defining parameters
 	discreteParams.resize(2);
-	discreteParams[0] = {(int)nx, (int)ny, (int)myMET};
+	discreteParams[0] = {(int)nx, (int)ny, (int)myMET, (int)VM::useInterpolatoryFilt};
 	discreteParams[1] = VM::vmTORSpec.toVec();
 	realParams.resize(3);
 	realParams[0] = {VM::threshold, VM::filtRad, width, height};
@@ -231,3 +243,4 @@ template class PixelRep<HelperNS::powPenalMin, HelperNS::regularizedHeaviside>;
 template class PixelRep<HelperNS::powPenal, HelperNS::thresholdHeaviside>;
 template class PixelRep<HelperNS::powPenalMin, HelperNS::thresholdHeaviside>;
 }
+

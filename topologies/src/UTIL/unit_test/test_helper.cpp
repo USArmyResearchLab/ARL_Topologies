@@ -160,3 +160,121 @@ TEST_CASE("Testing functions in HelperNS namespace","[HelperNS]")
 	for(std::size_t k = 0; k < res.size(); ++k)
 		REQUIRE(res[k] == Approx(exactRes[k]));
 }
+
+TEST_CASE("Testing TopOptRep::sparseMatrixMultiply","[TopOptRep]")
+{
+	using namespace HelperNS;
+	SparseMatrix testMat(10);
+	std::vector<double> vec(10,1.);
+	SECTION("Full matrix")
+	{
+		// Build a full matrix of 1s
+		for(auto& row : testMat)
+		{
+			row = SparseMatrix::make_row(10);
+			std::size_t kcol = 0;
+			for(auto& colPair : row)
+				colPair = SparseMatrix::make_entry(kcol++, 1.);
+		}
+		// Multiply
+		std::vector<double> res = testMat*vec;
+		// Test
+		for(auto val : res)
+			REQUIRE(val == Approx(10.));
+		// Transpose multiply
+		res = testMat.transposeTimes(vec, 10);
+		for(auto val : res)
+			REQUIRE(val == Approx(10.));
+	}
+	SECTION("Diagonal matrix")
+	{
+		// Build an identity matrix
+		std::size_t krow = 0;
+		for(auto& row : testMat)
+			row = SparseMatrix::make_row_with_entry(krow++, 3.);
+		// Multiply
+		std::vector<double> res = testMat*vec;
+		// Test
+		for(auto val : res)
+			REQUIRE(val == Approx(3.));
+		// Transpose times
+		res = testMat.transposeTimes(vec, 10);
+		for(auto val : res)
+			REQUIRE(val == Approx(3.));
+	}
+	SECTION("Differentiation matrix, tridiagonal")
+	{
+		// Build a matrix
+		std::size_t krow = 0;
+		for(auto& row : testMat)
+		{
+			row = SparseMatrix::make_row(3);
+			if(krow == 0)
+			{
+				row[0] = SparseMatrix::make_entry(0,  1.);
+				row[1] = SparseMatrix::make_entry(1, -2.);
+				row[2] = SparseMatrix::make_entry(2,  1.);
+			}
+			else if(krow == 9)
+			{
+				row[0] = SparseMatrix::make_entry(7,  1.);
+				row[1] = SparseMatrix::make_entry(8, -2.);
+				row[2] = SparseMatrix::make_entry(9,  1.);	
+			}
+			else
+			{
+				row[0] = SparseMatrix::make_entry(krow-1, 1.);
+				row[1] = SparseMatrix::make_entry(krow,  -2.);
+				row[2] = SparseMatrix::make_entry(krow+1, 1.);
+			}
+			++krow;
+		}
+		// Multiply
+		std::vector<double> res = testMat*vec;
+		// Test
+		for(std::size_t k = 0; k < 10; ++k)
+			REQUIRE(res[k] == Approx(0.));
+		// Transpose multiply
+		res = testMat.transposeTimes(vec, 10);
+		for(std::size_t k = 0; k < 10; ++k)
+		{
+			if(k == 0 || k == 9)
+				REQUIRE(res[k] == Approx(2.));
+			else if(k == 1 || k == 8)
+				REQUIRE(res[k] == Approx(-3.));
+			else if(k == 2 || k == 7)
+				REQUIRE(res[k] == Approx(1.));
+			else
+				REQUIRE(res[k] == Approx(0.));
+		}
+		// Test squared vals
+		for(std::size_t k = 0; k < vec.size(); ++k)
+			vec[k] = static_cast<double>(k*k);
+		res = testMat*vec;
+		// Test
+		for(std::size_t k = 0; k < 10; ++k)
+			REQUIRE(res[k] == Approx(2.));
+	}
+	SECTION("Non-square matrix: 10x5")
+	{
+		// Build matrix
+		for(auto& row : testMat)
+		{
+			row = SparseMatrix::make_row(5);
+			std::size_t kcol = 0;
+			for(auto& colPair : row)
+				colPair = SparseMatrix::make_entry(kcol++, 1.);
+		}
+		// Transpose multiply
+		std::vector<double> res = testMat.transposeTimes(vec, 5);
+		REQUIRE(res.size() == 5);
+		for(std::size_t k = 0; k < 5; ++k)
+			REQUIRE(res[k] == Approx(10.));
+		// Multiply
+		vec = std::vector<double>(5,1.);
+		res = testMat*vec;
+		for(std::size_t k = 0; k < 10; ++k)
+			REQUIRE(res[k] == Approx(5.));
+	}
+}
+

@@ -40,6 +40,7 @@
 #define FLAG_GE_MT 11
 #define FLAG_GCE_MT 12
 #define FLAG_FANDG_MT 13
+#define FLAG_PRINT_MT 14 // Print results using multi-threaded objective func
 
 namespace Topologies{
 #ifdef USE_MPI
@@ -100,8 +101,9 @@ MPIHandler::~MPIHandler()
 	}
 }
 
-void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, 
-																	std::vector<std::pair<std::vector<double>, bool> >& resVec, EvalFunction inef)
+template<typename Rep>
+void MPIHandler::rootBatchEvaluate(const std::vector<Rep>& TORvec, 
+	std::vector<std::pair<std::vector<double>, bool>>& resVec, EvalFunction inef)
 {
 	if(debugPrint) outFile << "numProcsPerEval: " << numProcsPerEval << std::endl;
 	if(numProcsPerEval > 1)
@@ -142,7 +144,8 @@ void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
 		rootReceiveOneResult(resVec);
 }
 
-void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
+template<typename Rep>
+void MPIHandler::rootBatchEvaluate(const std::vector<Rep>& TORvec,
 		std::vector<std::pair<std::vector<double>, bool>>& resVec,
 		unsigned numProcsPerEval, EvalFunction inef)
 {
@@ -197,7 +200,7 @@ void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
 	rootClearGroups();
 }
 
-void MPIHandler::rootEvaluateDifference(const std::vector<double>& vec1, std::vector<double>& diffVec, std::vector<std::pair<std::vector<double>, bool> >& resVec, EvalFunction inef)
+void MPIHandler::rootEvaluateDifference(const std::vector<double>& vec1, std::vector<double>& diffVec, std::vector<std::pair<std::vector<double>, bool>>& resVec, EvalFunction inef)
 {
 	// The 2 vectors vec1 and diffVec represent a realRep and a set of finite differences to compute
 	// This avoids having to copy a large number of TopOptRep objects and/or realRep vectors
@@ -205,8 +208,8 @@ void MPIHandler::rootEvaluateDifference(const std::vector<double>& vec1, std::ve
 	unsigned numGoals = 1;
 	unsigned locSize = vec1.size() < mpiSize ? vec1.size() : mpiSize;
 	// TODO: Add some check to make sure this matches the MPI rep coming from myTOR
-	std::vector<std::vector<double> > realRep;
-	std::vector<std::vector<int> > discreteRep;
+	std::vector<std::vector<double>> realRep;
+	std::vector<std::vector<int>> discreteRep;
 	realRep.push_back(vec1);
 	// Evaluate at x
 	rootSetUpForEval(0, 1, inef, true, defaultComm);
@@ -269,6 +272,23 @@ std::pair<std::vector<double>, bool> MPIHandler::rootEvaluateTOR(const TopOptRep
 	return resVec[0];
 }
 
+void MPIHandler::rootEvaluateTORAndPrint(const TopOptRep* const pTOR, std::string const& fileName)
+{
+	if(mpiSize == 1 || numProcsPerEval == 1)
+		myTOOF->printResult(*pTOR, fileName); // Single threaded
+	else
+	{
+		// Send TOR data
+		if(debugPrint) outFile << "Sending info for printResult" << std::endl;
+		rootSendFlagToGroup(FLAG_PRINT_MT, communicatorVec.back());
+		rootSendDataToGroup(pTOR, communicatorVec.back());
+		rootSendStringToGroup(fileName, communicatorVec.back());
+		if(debugPrint)  outFile << "done" << std::endl;
+		// In this case, the root will participate in the function evaluation
+		myTOOF->printResult(*pTOR, fileName, communicatorVec.back());
+	}
+}
+
 void MPIHandler::rootConvertTOR(std::unique_ptr<TopOptRep> inTOR, TORType inTORT)
 {
 	if(debugPrint) outFile << "Converting TOR" << std::endl;
@@ -326,10 +346,20 @@ void MPIHandler::rootClearGroups()
 	localComm = defaultComm;
 }
 
-void MPIHandler::rootSendData(const TopOptRep* sendTOR, unsigned procID, MPI::Comm& communicator)
+void MPIHandler::rootSendString(std::string const& str, unsigned procID, MPI::Comm& communicator) const
 {
-	std::vector<std::vector<double> > realRep;
-	std::vector<std::vector<int> > discreteRep;
+	if(debugPrint) outFile << "Sending string " << str << std::endl;
+	// Send size
+	unsigned sz = str.length() + 1;
+	communicator.Send(&sz, 1, MPI::UNSIGNED, procID, 0);
+	// Send string
+	communicator.Send(str.c_str(), sz, MPI::CHAR, procID, 0);
+}
+
+void MPIHandler::rootSendData(const TopOptRep* sendTOR, unsigned procID, MPI::Comm& communicator) const
+{
+	std::vector<std::vector<double>> realRep;
+	std::vector<std::vector<int>> discreteRep;
 	sendTOR->getMPIRep(discreteRep, realRep);
 	if(debugPrint)
 	{
@@ -341,8 +371,22 @@ void MPIHandler::rootSendData(const TopOptRep* sendTOR, unsigned procID, MPI::Co
 	rootSendData(realRep, discreteRep, procID, communicator);
 }
 
-void MPIHandler::rootSendData(const std::vector<std::vector<double> >& realRep, const std::vector<std::vector<int> >& discreteRep, 
-	unsigned procID, MPI::Comm& communicator)
+void MPIHandler::rootSendData(const std::vector<double>& realRep, unsigned procID, MPI::Comm& communicator) const
+{
+	// This uses the same format as rootSendData with both realRep and discreteRep, so the sizes are still sent
+	// Send data sizes:
+	unsigned vecSizes[2] = {1, 0};
+	communicator.Send(vecSizes, 2, MPI::UNSIGNED, procID, 0);
+	// Send all real vectors
+	// Send array size
+	unsigned vsize = realRep.size();
+	communicator.Send(&vsize, 1, MPI::UNSIGNED, procID, 0);
+	// Send data
+	communicator.Send(realRep.data(), realRep.size(), MPI::DOUBLE, procID, 0);
+}
+
+void MPIHandler::rootSendData(const std::vector<std::vector<double>>& realRep, const std::vector<std::vector<int>>& discreteRep, 
+	unsigned procID, MPI::Comm& communicator) const
 {
 	// Send data sizes:
 	unsigned vecSizes[2] = {realRep.size(), discreteRep.size()};
@@ -354,8 +398,7 @@ void MPIHandler::rootSendData(const std::vector<std::vector<double> >& realRep, 
 		unsigned vsize = realRep[k].size();
 		communicator.Send(&vsize, 1, MPI::UNSIGNED, procID, 0);
 		// Send data
-		std::unique_ptr<Real[]> realArray = MPIHelperFunctions::packData(realRep[k]);
-		communicator.Send(realArray.get(), realRep[k].size() + 1, MPI::DOUBLE, procID, 0);
+		communicator.Send(realRep[k].data(), realRep[k].size(), MPI::DOUBLE, procID, 0);
 	}
 	// Send all discrete vectors
 	for(unsigned k = 0; k < vecSizes[1]; ++k)
@@ -364,19 +407,31 @@ void MPIHandler::rootSendData(const std::vector<std::vector<double> >& realRep, 
 		unsigned vsize = discreteRep[k].size();
 		communicator.Send(&vsize, 1, MPI::UNSIGNED, procID, 0);
 		// Send data
-		std::unique_ptr<int[]> intArray = MPIHelperFunctions::packData(discreteRep[k]);
-		communicator.Send(intArray.get(), discreteRep[k].size() + 1, MPI::INT, procID, 0);
+		communicator.Send(discreteRep.data(), discreteRep[k].size(), MPI::INT, procID, 0);
 	}
 }
 
-void MPIHandler::rootSendDataToGroup(const TopOptRep* sendTOR, MPI::Comm& groupComm)
+void MPIHandler::rootSendStringToGroup(std::string const& str, MPI::Comm& groupComm) const
+{
+	for(unsigned k = 1; k < groupComm.Get_size(); ++k)
+		rootSendString(str, k, groupComm);
+}
+
+void MPIHandler::rootSendDataToGroup(const TopOptRep* sendTOR, MPI::Comm& groupComm) const
 {
 	for(unsigned k = 1; k < groupComm.Get_size(); ++k)
 		rootSendData(sendTOR, k, groupComm);
 }
 
-void MPIHandler::rootSendDataToGroup(const std::vector<std::vector<double> >& realRep,
-	const std::vector<std::vector<int> >& discreteRep, MPI::Comm& groupComm)
+void MPIHandler::rootSendDataToGroup(const std::vector<double>& realRep, MPI::Comm& groupComm) const
+{
+	assert(groupID < communicatorVec.size());
+	for(unsigned k = 1; k < groupComm.Get_size(); ++k)
+		rootSendData(realRep, k, groupComm);
+}
+
+void MPIHandler::rootSendDataToGroup(const std::vector<std::vector<double>>& realRep,
+	const std::vector<std::vector<int>>& discreteRep, MPI::Comm& groupComm) const
 {
 	assert(groupID < communicatorVec.size());
 	for(unsigned k = 1; k < groupComm.Get_size(); ++k)
@@ -389,7 +444,7 @@ void MPIHandler::rootSendFlagToGroup(unsigned flag, MPI::Comm& groupComm) const
 		groupComm.Send(&flag, 1, MPI::UNSIGNED, k, 0);
 }
 
-void MPIHandler::rootSetUpForEval(unsigned evalID, unsigned procID, EvalFunction inef, bool isST, MPI::Comm& communicator)
+void MPIHandler::rootSetUpForEval(unsigned evalID, unsigned procID, EvalFunction inef, bool isST, MPI::Comm& communicator) const
 {
 	if(debugPrint)
 		outFile << "sending info to node " << procID << std::endl;
@@ -408,7 +463,7 @@ void MPIHandler::rootSetUpGroupForEval(unsigned evalID, unsigned groupID, EvalFu
 		rootSetUpForEval(evalID, k, inef, false, communicatorVec[groupID]);
 }
 
-void MPIHandler::rootSendFlag(unsigned flag) const
+void MPIHandler::rootSendFlag(unsigned flag) 
 {
 	for(int kproc = 1; kproc < mpiSize; kproc++)
 		defaultComm.Send(&flag, 1, MPI::UNSIGNED, kproc, 0);
@@ -519,31 +574,50 @@ void MPIHandler::slaveClearGroups()
 	rootClearGroups(); // Same procedure
 }
 
-unsigned MPIHandler::slaveReceiveDataAndSetupTOR()
+std::string MPIHandler::slaveReceiveString()
+{
+	MPI::Intracomm comm = communicatorVec.empty() ? defaultComm : communicatorVec.back();
+	// Receive size
+	unsigned sz;
+	MPI::Status status;
+	comm.Recv(&sz, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
+	// Receive string
+	std::unique_ptr<char[]> cStr(new char[sz]);
+	comm.Recv(cStr.get(), sz, MPI::CHAR, MPI::ANY_SOURCE, 0, status);
+	// Return string
+	return std::string(cStr.get());
+}
+
+void MPIHandler::checkRunnable() const
 {
 	if(!isRunnable())
 	{
 		std::cerr << "In MPIHandler::slaveEvaluateAndReturnResult, myTOOF or myTOR is uninitialized!" << std::endl;
 		abort();
 	}
-	if(debugPrint)
-		outFile << "Waiting for TOR data" << std::endl;
+}
+
+unsigned MPIHandler::slaveReceiveEvalID()
+{
+	if(debugPrint) outFile << "Waiting for TOR eval id" << std::endl;
 	// Evaluation ID so that root knows which TOR is being evaluated on return
 	MPI::Status status;
 	unsigned evalID;
-	if(communicatorVec.empty())
-		defaultComm.Recv(&evalID, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
-	else
-		communicatorVec.back().Recv(&evalID, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
+	MPI::Intracomm comm = communicatorVec.empty() ? defaultComm : communicatorVec.back();
+	comm.Recv(&evalID, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
+	return evalID;
+}
+
+void MPIHandler::slaveReceiveDataAndSetupTOR()
+{
+	if(debugPrint) outFile << "Waiting for TOR data" << std::endl;
 	// Recv data
 	std::vector<std::vector<double>> realRep;
 	std::vector<std::vector<int>> discreteRep;
 	slaveReceiveData(realRep, discreteRep);
 	// Finish set up
-	if(debugPrint)
-		outFile << "Got TOR, setting up" << std::endl;
+	if(debugPrint) outFile << "Got TOR, setting up" << std::endl;
 	myTOR->setMPIRep(discreteRep, realRep);
-	return evalID;
 }
 
 void MPIHandler::slaveReceiveData(std::vector<std::vector<double>>& realRep, std::vector<std::vector<int>>& discreteRep)
@@ -553,45 +627,33 @@ void MPIHandler::slaveReceiveData(std::vector<std::vector<double>>& realRep, std
 	unsigned vecSizes[2];
 	communicatorVec.back().Recv(vecSizes, 2, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
 	// Receive all real vectors
+	realRep.resize(vecSizes[0]);
 	for(unsigned k = 0; k < vecSizes[0]; ++k)
 	{
 		// Receive array size
 		unsigned vsize;
 		communicatorVec.back().Recv(&vsize, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
 		// Receive data
-		std::unique_ptr<double[]> realArray(new double[vsize + 1]);
-		communicatorVec.back().Recv(realArray.get(), vsize + 1, MPI::DOUBLE, MPI::ANY_SOURCE, 0, status);
-		// Check data
-		if(!MPIHelperFunctions::checkArrayCheckSum(realArray.get(), vsize))
-			std::cout << "WARNING: Array check sums don't match!" << std::endl;
+		realRep[k].resize(vsize);
+		communicatorVec.back().Recv(realRep[k].data(), vsize, MPI::DOUBLE, MPI::ANY_SOURCE, 0, status);
 		if(debugPrint)
 		{
 			outFile << "Received data: ";
-			for(unsigned k = 0; k < (vsize + 1); ++k)
-				outFile << realArray[k] << " ";
+			for(auto val : realRep[k])
+				outFile << val << " ";
 			outFile << std::endl;
 		}
-		// Set up vector
-		std::vector<double> curVec;
-		MPIHelperFunctions::unpackData(realArray.get(), vsize, curVec);
-		realRep.push_back(curVec);
 	}
 	// Recv all discrete vectors
+	discreteRep.resize(vecSizes[1]);
 	for(unsigned k = 0; k < vecSizes[1]; ++k)
 	{
 		// Receive array size
 		unsigned vsize;
 		communicatorVec.back().Recv(&vsize, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
 		// Receive data
-		std::unique_ptr<int[]> intArray(new int[vsize + 1]);
-		communicatorVec.back().Recv(intArray.get(), vsize + 1, MPI::INT, MPI::ANY_SOURCE, 0, status);
-		// Check data
-		if(!MPIHelperFunctions::checkArrayCheckSum(intArray.get(), vsize))
-			std::cout << "WARNING: Array check sums don't match!" << std::endl;
-		// Set up vector
-		std::vector<int> curVec;
-		MPIHelperFunctions::unpackData(intArray.get(), vsize, curVec);
-		discreteRep.push_back(curVec);
+		discreteRep[k].resize(vsize);
+		communicatorVec.back().Recv(discreteRep[k].data(), vsize, MPI::INT, MPI::ANY_SOURCE, 0, status);
 	}
 }
 
@@ -609,6 +671,23 @@ void MPIHandler::slaveReceiveNewTORParams()
 	setupNewTOR((TORType)tortype, realParams, discreteParams);
 }
 
+void MPIHandler::slavePrintResult()
+{
+	checkRunnable();
+	slaveReceiveDataAndSetupTOR();
+	std::string fileName = slaveReceiveString();
+	myTOOF->printResult(*myTOR, fileName, localComm);
+}
+
+void MPIHandler::slaveEvaluate(unsigned flag)
+{
+	checkRunnable();
+	unsigned evalID = slaveReceiveEvalID();
+	slaveReceiveDataAndSetupTOR();
+	EvalFunction curef = convertFlagToEF(flag);
+	slaveEvaluateAndReturnResult(evalID, curef, isEvalSingleThreaded(flag));
+}
+
 void MPIHandler::slaveWaitAndProcessFlag()
 {
 	unsigned flag;
@@ -619,26 +698,23 @@ void MPIHandler::slaveWaitAndProcessFlag()
 	while(flag != FLAG_DONE)
 	{
 		if(flagIsEvaluation(flag)) // Evaluate objective function
-		{
-			unsigned evalID = slaveReceiveDataAndSetupTOR();
-			EvalFunction curef = convertFlagToEF(flag);
-			slaveEvaluateAndReturnResult(evalID, curef, isEvalSingleThreaded(flag));
-		}
-		else if(flag == FLAG_FORM_GROUPS) // Multi-threaded OF
+			slaveEvaluate(flag);
+		else if(flag == FLAG_FORM_GROUPS) // Set up for multi-threaded OF
 			slaveFormGroups();
 		else if(flag == FLAG_CLEAR_GROUPS)
 			slaveClearGroups();
 		else if(flag == FLAG_CONVERT_TOR)
 			slaveReceiveNewTORParams();
-		// Need 1 more flag for result printing
+		else if(flag == FLAG_PRINT_MT)
+			slavePrintResult();
 		if(debugPrint) outFile << "Waiting for flag, current group size: " << communicatorVec.back().Get_size() << ", rank: " << communicatorVec.back().Get_rank() << std::endl;
 		communicatorVec.back().Recv(&flag, 1, MPI::UNSIGNED, MPI::ANY_SOURCE, 0, status);
 		if(debugPrint) outFile << "Got flag " << flag << std::endl;
 	}
 }
 
-void MPIHandler::setupNewTOR(TORType tortype, const std::vector<std::vector<double> >& realRep,
-                  						const std::vector<std::vector<int> >& discreteRep)
+void MPIHandler::setupNewTOR(TORType tortype, const std::vector<std::vector<double>>& realRep,
+                  						const std::vector<std::vector<int>>& discreteRep)
 {
 	myTOR = TopOptRepFactory::createTopOptRep(tortype, realRep, discreteRep);
 }
@@ -721,8 +797,9 @@ void MPIHandler::slaveWaitAndProcessFlag()
 	// This should never be called in non-MPI mode
 }
 
-void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, 
-																	std::vector<std::pair<std::vector<double>, bool> >& resVec, 
+template<typename Rep>
+void MPIHandler::rootBatchEvaluate(const std::vector<Rep>& TORvec, 
+																	std::vector<std::pair<std::vector<double>, bool>>& resVec, 
 																	EvalFunction inef)
 {
 	resVec.resize(TORvec.size());
@@ -730,8 +807,9 @@ void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
 		resVec[k] = evaluate(TORVec[k], inef);
 }
 
-void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec, 
-																	std::vector<std::pair<std::vector<double>, bool> >& resVec, 
+template<typename Rep>
+void MPIHandler::rootBatchEvaluate(const std::vector<Rep>& TORvec, 
+																	std::vector<std::pair<std::vector<double>, bool>>& resVec, 
 																	unsigned numProcsPerEval, EvalFunction inef)
 {
 	rootBatchEvaluate(TORvec, resVec, inef);
@@ -744,15 +822,20 @@ std::pair<std::vector<double>, bool> MPIHandler::rootEvaluateTOR(const TopOptRep
 	return res;
 }
 
+void MPIHandler::rootEvaluateTORAndPrint(const TopOptRep* const pTOR, std::string const& fileName)
+{
+	pTOR->printResult(fileName);
+}
+
 void MPIHandler::rootEvaluateDifference(const std::vector<double>& vec1, std::vector<double>& diffVec, 
-																				std::vector<std::pair<std::vector<double>, bool> >& resVec, EvalFunction inef)
+																				std::vector<std::pair<std::vector<double>, bool>>& resVec, EvalFunction inef)
 {
   // The 2 vectors vec1 and diffVec represent a realRep and a set of finite differences to compute
   // This avoids having to copy a large number of TopOptRep objects and/or realRep vectors
   unsigned numGoals = 1;
   unsigned locSize = vec1.size() < mpiSize ? vec1.size() : mpiSize;
-  std::vector<std::vector<double> > realRep;
-  std::vector<std::vector<int> > discreteRep;
+  std::vector<std::vector<double>> realRep;
+  std::vector<std::vector<int>> discreteRep;
   realRep.push_back(vec1);
 	resVec.resize(vec1.size() + 1);
 	// Evaluate at x
@@ -780,6 +863,12 @@ std::pair<std::vector<double>, bool> MPIHandler::evaluate(std::vector<std::vecto
 		std::vector<std::vector<int>>& discreteRep, EvalFunction inef)
 {
 	myTOR->setMPIRep(discreteRep, realRep);
+	return evaluate(inef);
+}
+
+std::pair<std::vector<double>, bool> MPIHandler::evaluate(std::vector<double> const& realRep, EvalFunction inef)
+{
+	myTOR->setMPIRep({}, {realRep});
 	return evaluate(inef);
 }
 
@@ -845,8 +934,8 @@ void MPIHandler::rootConvertTOR(std::unique_ptr<TopOptRep> inTOR)
 	rootConvertTOR(std::move(inTOR), tmp);
 }
 
-void MPIHandler::copyFirstObjective(std::vector<std::pair<double, bool> >& resVec,
-                      const std::vector<std::pair<std::vector<double>, bool> >& resVec2) const
+void MPIHandler::copyFirstObjective(std::vector<std::pair<double, bool>>& resVec,
+	const std::vector<std::pair<std::vector<double>, bool>>& resVec2) const
 {
 	resVec.resize(resVec2.size());
 	for(unsigned k = 0; k < resVec.size(); ++k)
@@ -858,90 +947,49 @@ void MPIHandler::copyFirstObjective(std::vector<std::pair<double, bool> >& resVe
 	}
 }
 
-void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
-                                    std::vector<std::pair<double, bool> >& resVec, EvalFunction inef)
+template<typename Rep>
+void MPIHandler::rootBatchEvaluate(const std::vector<Rep>& TORvec,
+                                    std::vector<std::pair<double, bool>>& resVec, EvalFunction inef)
 {
-	std::vector<std::pair<std::vector<double>, bool> > tmpResVec;
+	std::vector<std::pair<std::vector<double>, bool>> tmpResVec;
 	rootBatchEvaluate(TORvec, tmpResVec, inef);
 	copyFirstObjective(resVec, tmpResVec);
 }
 
-void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>& TORvec,
-                                  std::vector<std::pair<double, bool> >& resVec, unsigned numProcsPerEval,
+template<typename Rep>
+void MPIHandler::rootBatchEvaluate(const std::vector<Rep>& TORvec,
+                                  std::vector<std::pair<double, bool>>& resVec, unsigned numProcsPerEval,
                                   EvalFunction inef)
 {
-	std::vector<std::pair<std::vector<double>, bool> > tmpResVec;
+	std::vector<std::pair<std::vector<double>, bool>> tmpResVec;
 	rootBatchEvaluate(TORvec, tmpResVec, numProcsPerEval, inef);
 	copyFirstObjective(resVec, tmpResVec);
 }
 
 void MPIHandler::rootEvaluateDifference(const std::vector<double>& vec1, std::vector<double>& diffVec,
-                                    std::vector<std::pair<double, bool> >& resVec, EvalFunction inef)
+                                    std::vector<std::pair<double, bool>>& resVec, EvalFunction inef)
 {
-	std::vector<std::pair<std::vector<double>, bool> > tmpResVec;
+	std::vector<std::pair<std::vector<double>, bool>> tmpResVec;
 	rootEvaluateDifference(vec1, diffVec, tmpResVec, inef);
 	copyFirstObjective(resVec, tmpResVec);
 }
 
-namespace MPIHelperFunctions
-{
-	std::unique_ptr<Real[]> packData(const std::vector<Real>& realVec)
-	{
-	  std::size_t n = realVec.size();
-	  std::unique_ptr<Real[]> prArray(new Real[n + 1]);
-	  Real checkSum = 0;
-	  for(std::size_t k = 0; k < n; k++)
-	  {
-			prArray[k] = realVec[k];
-			checkSum += fabs(prArray[k]);
-	  }
-	  prArray[n] = checkSum;
-	  return prArray;
-	}
-
-	std::unique_ptr<int[]> packData(const std::vector<int>& treeVec)
-	{
-	  std::size_t n = treeVec.size();
-	  std::unique_ptr<int[]> treeArray(new int[n + 1]);
-	  int checkSum = 0;
-	  for(std::size_t k = 0; k < n; k++)
-	  {
-			treeArray[k] = treeVec[k];
-			checkSum += abs(treeArray[k]);
-	  }
-	  treeArray[n] = checkSum;
-	  return treeArray;
-	}
-
-	void unpackData(const int *const inArray, unsigned arraySize, std::vector<int>& intVec)
-	{
-		intVec.resize(arraySize);
-		for(unsigned k = 0; k < arraySize; ++k)
-			intVec[k] = inArray[k];
-	}
-
-	void unpackData(const Real *const inArray, unsigned arraySize, std::vector<Real>& realVec)
-	{
-		realVec.resize(arraySize);
-		for(unsigned k = 0; k < arraySize; ++k)
-			realVec[k] = inArray[k];
-	}
-
-	bool checkArrayCheckSum(const int *const inArray, unsigned arraySize)
-	{
-		int treeCS = 0;
-		for(unsigned k = 0; k < arraySize; ++k)
-			treeCS += abs(inArray[k]);
-		return treeCS == inArray[arraySize];
-	}
-
-	bool checkArrayCheckSum(const Real *const inArray, unsigned arraySize)
-	{
-		Real treeCS = 0;
-		for(unsigned k = 0; k < arraySize; ++k)
-			treeCS += fabs(inArray[k]);
-		return TOL_EQ(treeCS, inArray[arraySize], 1e-12);
-	}
+// Explicit instantiations
+template void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>&, std::vector<std::pair<double, bool>>&, EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>&, std::vector<std::pair<double, bool>>&, 
+	unsigned, EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>&, std::vector<std::pair<std::vector<double>, bool>>&, 
+	EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<TopOptRep*>&, std::vector<std::pair<std::vector<double>, bool>>&, 
+	unsigned, EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<std::vector<double>>&, std::vector<std::pair<double, bool>>&, 
+	EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<std::vector<double>>&, std::vector<std::pair<double, bool>>&, 
+	unsigned, EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<std::vector<double>>&, 
+	std::vector<std::pair<std::vector<double>, bool>>&,	EvalFunction);
+template void MPIHandler::rootBatchEvaluate(const std::vector<std::vector<double>>&, 
+	std::vector<std::pair<std::vector<double>, bool>>&, unsigned, EvalFunction);
 }
-}
+
 

@@ -26,7 +26,6 @@
 #include "helper.h"
 #include <vector>
 #include <unordered_map>
-#include <map>
 #include <CGAL/Point_set_2.h>
 
 namespace Topologies{
@@ -67,7 +66,7 @@ public:
 	virtual std::vector<double> operator()(const std::vector<double>& xVec, 
 		const std::vector<Point_2_base>& filtPts, double rad) const;
 	virtual Tr_GT::FT operator()(Tr_GT::Point_2 p) const;
-	virtual std::vector<std::map<std::size_t, double>> diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const;
+	virtual HelperNS::SparseMatrix diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const;
 	
 private:
 	void filterMesh(const std::vector<double>& x, std::vector<double>& y, const std::vector<Point_2_base>& filtPts, double rad) const;
@@ -91,8 +90,8 @@ private:
 	virtual std::vector<double> operator()(const std::vector<double>& xVec,
 		const std::vector<Point_3_base>& filtPts, double rad) const {return std::vector<double>();}
 	virtual Tr_GT::FT operator()(Tr_GT::Point_3 p) const {return 0.;}
-	virtual std::vector<std::map<std::size_t, double>> diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const
-  {return std::vector<std::map<std::size_t, double>>();}
+	virtual HelperNS::SparseMatrix diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const
+  {return HelperNS::SparseMatrix();}
 };
 }// namespace
 #endif

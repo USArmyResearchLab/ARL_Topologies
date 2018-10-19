@@ -23,9 +23,11 @@
 
 #include <memory>
 #include <string>
+#include <algorithm>
 #include "cgal_types.h"
 #include "geometrytranslation.h"
 #include "topologiesdefs.h"
+#include "helper.h"
 
 namespace Topologies{
 class TOMesh;
@@ -41,10 +43,10 @@ class TopOptRep
 public:
 	virtual ~TopOptRep(){}
 	explicit TopOptRep(TORType inTORT) : myTORT(inTORT) {}
-	TopOptRep(const TopOptRep& copyFrom) : myTORT(copyFrom.myTORT) {}
+	TopOptRep(const TopOptRep& copyFrom) : realOptVals(copyFrom.realOptVals), myTORT(copyFrom.myTORT) {}
 	TopOptRep& operator=(TopOptRep copy) {swap(copy); return *this;}
 	TopOptRep(TopOptRep && rhs) {swap(rhs);}
-	void swap(TopOptRep& rhs) {std::swap(myTORT, rhs.myTORT);}
+	void swap(TopOptRep& rhs) {std::swap(myTORT, rhs.myTORT); realOptVals.swap(rhs.realOptVals);}
 	virtual std::unique_ptr<TopOptRep> clone() const = 0;
 
 	//! @name Decode functions
@@ -61,6 +63,8 @@ public:
 	virtual std::unique_ptr<TOMesh> get3DVolumeMesh() const = 0;
 	//! Returns the boundary of the topology
 	virtual void getBoundary(std::vector<Mesh_Segment_2>& boundaryVec) const = 0;
+	//! Returns a mesh for analysis purposes
+	virtual std::unique_ptr<TOMesh> getAnalysisMesh() const;
 	//! Returns a mesh for output purposes (rather than analysis)
 	virtual std::unique_ptr<TOMesh> getOutputMesh() const = 0;
 	//@}
@@ -88,7 +92,8 @@ public:
 	/*! This is the main way that optimization algorithms (TopOpt) interact with a TopOptRep.  
 	 *  Also, these values should always be between 0 and 1.
 	 */
-	virtual void setRealRep(const std::vector<double>& newvals) = 0;
+	template<typename Iterator>
+	void setRealRep(Iterator first, Iterator last);
 	//! Replaces the discrete optimization parameters of a topology with `newvals`
 	virtual void setDiscreteRep(const std::vector<int>& newvals) = 0;
 	//! Replaces all optimization parameters with the input arguments
@@ -116,11 +121,21 @@ public:
 	virtual double computeVolumeFraction() const = 0;
 	//! Compute and return the gradient of the volume fraction of the TopOptRep
 	virtual std::vector<double> computeGradVolumeFraction() const = 0;
+	//! Applies the derivative of the representation to the vector @param elemGrad
+	/*! This function is equivalent to using diffRep and multiplying a vector with the diffRep sparse matrix.
+	 *  This version has the advantage of avoiding a copy of the sparse matrix.
+	 *  It's essentially applying the chain rule to a gradient based on the element densities.
+	 *  Setting @param usePenalization to false removes any penalization function.
+	 */
+	virtual std::vector<double> applyDiffRep(std::vector<double> const& elemGrad, bool usePenalization = true) const = 0;
 	//! Computes the partial derivatives of the mesh element values with respect to the design variables
-	/*! Returns a vector of maps in a sparse matrix-like representation.  Rows correspond to design variables and
-   *  columns correspond to mesh element values.  
+	/*! Returns a vector of vectors of column/value pairs, i.e. a sparse matrix-like representation.  
+	 *  Rows correspond to design variables and columns correspond to mesh element values.  
+	 *  Setting @param usePenalization to false removes any penalization function.
    */
-	virtual std::vector<std::map<std::size_t, double>> diffRep() const = 0;
+	virtual HelperNS::SparseMatrix diffRep(bool usePenalization = true) const = 0;
+	//! Returns if this representation can generate an analytical derivative
+	virtual bool hasAnalyticalDerivative() const = 0;
 	//! Return the absolute expected magnitude of the optimization parameters
 	/*! This is currently not implemented, but it may be necessary for problems with vastly different scales of 
 	 *  parameters.  The scale can effect how finite differences and/or meshes are computed.
@@ -130,8 +145,10 @@ public:
 	/*! This is needed for sending new information about a TopOptRep over MPI and will be used in implementation constructors. */
 	virtual void getDefiningParameters(std::vector<std::vector<int> >& discreteParams, 
 										std::vector<std::vector<double> >& realParams) const = 0;
-	//! Fix all values in `realVec` to the range required by this TopOptRep (usually 0-1)
-	virtual void boundsCheck(std::vector<double>& realVec) const = 0;
+	//! Fix all values in @param realVec to the range required by this TopOptRep (usually 0-1)
+	void boundsCheck(std::vector<double>& realVec) const;
+	//! Fix all values in @param realVec to the range required by this TopOptRep (usually 0-1)
+	void boundsCheck();
 	//! Return the name of this TopOptRep (ie. pixel, voxel, etc.)
 	virtual std::string getName() const = 0;
 	//! Return the TORType of this TopOptRep
@@ -146,8 +163,44 @@ public:
 	virtual void filterData(double radius) = 0;
 	//@}
 protected:
+	//! Allows for additional set up of real rep when called
+	virtual void updateRealRep() = 0;
+	
+	std::vector<double> realOptVals;
 	TORType myTORT;
 };
+
+template<typename Iterator>
+inline
+void TopOptRep::setRealRep(Iterator first, Iterator last)
+{
+	realOptVals.resize(std::distance(first, last));
+	std::copy(first, last, realOptVals.begin());
+	boundsCheck(realOptVals);
+	updateRealRep(); // Do any derived class setup
+}
+
+inline
+void TopOptRep::boundsCheck()
+{
+	boundsCheck(realOptVals);
+}
+
+inline
+void TopOptRep::boundsCheck(std::vector<double>& realVec) const
+{
+  std::replace_if(realVec.begin(), realVec.end(), HelperNS::greaterThan1, 1.);
+  std::replace_if(realVec.begin(), realVec.end(), HelperNS::lessThan0, 0.);
+}
+
+inline
+std::unique_ptr<TOMesh> TopOptRep::getAnalysisMesh() const
+{
+	if(getDimension() == 2)
+		return get2DMesh();
+	return get3DVolumeMesh();
+}
+
 }// namespace
 
 #endif

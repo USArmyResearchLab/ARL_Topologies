@@ -93,7 +93,7 @@ bool FEMProblem::checkForSimplex() const
 {
 	bool foundSimplex = false;
 	for(std::size_t k = 0; k < probMesh->getNumElements() && !foundSimplex; ++k)
-		foundSimplex = probMesh->getNumElementNodes(k) == (dim + 1);
+		foundSimplex |= probMesh->getNumElementNodes(k) == (dim + 1);
 	return foundSimplex;
 }
 
@@ -325,12 +325,10 @@ double FEMProblem::elementCompliance3D(const std::size_t kelem, const EigenDense
 	return res;
 }
 
-std::vector<double> FEMProblem::gradCompliance(const Topologies::TOMesh* const inMesh, 
-		const std::vector<std::map<std::size_t, double>>& dTOR) const
+std::vector<double> FEMProblem::gradCompliance(const Topologies::TOMesh* const inMesh) const
 {
 	std::size_t numNodes = probMesh->getNumUnknowns();
 	std::size_t nelems = probMesh->getNumElements();
-	std::vector<double> res(dTOR.size(), 0.);
 	// Precompute uku values
 	std::vector<double> ukuVec(nelems);
 	for(std::size_t ielem = 0; ielem < nelems; ++ielem)
@@ -339,13 +337,6 @@ std::vector<double> FEMProblem::gradCompliance(const Topologies::TOMesh* const i
 		ukuVec[ielem] = -elementCompliance(ielem, elemMat, numNodes);
 		ukuVec[ielem] /= inMesh->getOptVal(ielem);
 	}
-	// Multiply with dTOR
-	for(std::size_t k = 0; k < dTOR.size(); ++k)
-	{
-		const std::map<std::size_t, double>& curRow = dTOR[k];
-		for(auto columnIt = curRow.begin(); columnIt != curRow.end(); ++columnIt)
-			res[k] += ukuVec[columnIt->first]*(columnIt->second);
-	}
-	return res;
+	return ukuVec;
 }
 

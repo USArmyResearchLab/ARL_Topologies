@@ -26,7 +26,6 @@
 #include "helper.h"
 #include <vector>
 #include <memory>
-#include <map>
 #include <unordered_map>
 #include <CGAL/Search_traits_3.h>
 #include <CGAL/Kd_tree.h>
@@ -75,7 +74,7 @@ public:
 	virtual std::vector<double> operator()(const std::vector<double>& xVec, 
 		const std::vector<Point_3_base>& filtPts, double rad) const;
 	virtual Tr_GT::FT operator()(Tr_GT::Point_3 p) const;
-	virtual std::vector<std::map<std::size_t, double>> diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const;
+	virtual HelperNS::SparseMatrix diffFilter(const std::vector<Point_3_base>& filtPts, double rad) const;
 private:
 	std::vector<double> filterMesh(const std::vector<double>& x, const std::vector<Point_3_base>& filtPts, double rad) const;
 	void getPointsInSphere(const Point_3_base& center, double rad, std::vector<Point_3_base>& outVec) const;
@@ -92,8 +91,8 @@ private:
 	virtual Tr_GT::FT operator()(Tr_GT::Point_2 p) const {return 0.;}
 	virtual std::vector<double> operator()(const std::vector<double>& xVec, 
 		const std::vector<Point_2_base>& filtPts, double rad) const {return std::vector<double>();}
-	virtual std::vector<std::map<std::size_t, double>> diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const
-	{return std::vector<std::map<std::size_t, double>>();}
+	virtual HelperNS::SparseMatrix diffFilter(const std::vector<Point_2_base>& filtPts, double rad) const
+	{return HelperNS::SparseMatrix();}
 };
 } //namespace
 #endif

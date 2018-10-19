@@ -61,5 +61,38 @@ bool HelperNS::isFileReadable(std::string const& fileName)
 	return ifs.good();
 }
 
+std::vector<double> HelperNS::SparseMatrix::operator*(std::vector<double> const& vec) const
+{
+	std::vector<double> res(m_mat.size(), 0.);
+	auto rowIt = res.begin();
+	for(auto const& rowVec : m_mat)
+	{
+		for(auto const& colPair : rowVec)
+			*rowIt += value(colPair)*vec[index(colPair)];
+		++rowIt;
+	}
+	return res;
+}
+
+double HelperNS::SparseMatrix::operator()(std::size_t row, std::size_t col) const
+{
+	SparseRow const& matRow = m_mat[row];
+	for(auto const& colPair : matRow)
+	{
+		if(index(colPair) == col)
+			return value(colPair);
+	}
+	return 0.;
+}
+
+std::vector<double> HelperNS::SparseMatrix::transposeTimes(std::vector<double> const& vec, std::size_t ncols) const
+{
+	std::vector<double> res(ncols, 0.);
+	for(std::size_t krow = 0; krow < m_mat.size(); ++krow)
+		for(auto const& colPair : m_mat[krow])
+			res[index(colPair)] += vec[krow]*value(colPair);
+	return res;
+}
+
 }
 

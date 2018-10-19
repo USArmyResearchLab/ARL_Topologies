@@ -28,21 +28,13 @@
 #include <fstream>
 
 using namespace Topologies;
+using namespace HelperNS;
 
 std::vector<double> filterWithDiff(const std::vector<double>& xVec, std::size_t npts,
-		const std::vector<std::map<std::size_t, double>>& diffMat)
+		SparseMatrix const& diffMat)
 {
 	REQUIRE(xVec.size() == diffMat.size());
-	std::vector<double> res(npts, 0.);
-	for(std::size_t k = 0; k < diffMat.size(); ++k)
-	{
-		const std::map<std::size_t, double>& curRow = diffMat[k];
-		for(auto it = curRow.begin(); it != curRow.end(); ++it)
-		{
-			REQUIRE(it->first < res.size());
-			res[it->first] = res[it->first] + it->second * xVec[k];
-		}
-	}
+	std::vector<double> res = diffMat.transposeTimes(xVec, npts);
 	return res;
 }
 
@@ -97,7 +89,7 @@ TEST_CASE("Testing Filter3D with uniform mesh input.", "[Filter3D]")
 		for(std::size_t k = 0; k < ptVec.size(); ++k)
 			REQUIRE(testFilt(ptVec[k]) == Approx(row[k]));
 		// Retest with the filter derivative (same results can be computed since it's a linear filter)
-		std::vector<std::map<std::size_t, double>> diffMat = testFilt.diffFilter(ptVec, rad);
+		SparseMatrix diffMat = testFilt.diffFilter(ptVec, rad);
 		res = filterWithDiff(xVec, ptVec.size(), diffMat);
 		for(std::size_t k = 0; k < res.size(); ++k)
 			REQUIRE(res[k] == Approx(row[k]));
@@ -156,7 +148,7 @@ TEST_CASE("Testing Filter3D with uniform mesh input.", "[Filter3D]")
 		for(std::size_t k = 0; k < ptVec.size(); ++k)
 			REQUIRE(testFilt(ptVec[k]) == Approx(row[k]));
 		// Retest with the filter derivative (same results can be computed since it's a linear filter)
-		std::vector<std::map<std::size_t, double>> diffMat = testFilt.diffFilter(ptVec, rad);
+		SparseMatrix diffMat = testFilt.diffFilter(ptVec, rad);
 		res = filterWithDiff(xVec, ptVec.size(), diffMat);
 		for(std::size_t k = 0; k < res.size(); ++k)
 			REQUIRE(res[k] == Approx(row[k]));
@@ -232,7 +224,7 @@ TEST_CASE("Testing Filter3D with TOMesh tet input","[Filter3D]")
 		REQUIRE(testFilt(Point_3_base(2.,-2.,2.)) == Approx(0.));
 		REQUIRE(testFilt(Point_3_base(2.,2.,-2.)) == Approx(0.));
 		// Retest with the filter derivative (same results can be computed since it's a linear filter)
-		std::vector<std::map<std::size_t, double>> diffMat = testFilt.diffFilter(centroidPts, rad);
+		SparseMatrix diffMat = testFilt.diffFilter(centroidPts, rad);
 		res = filterWithDiff(xVec, centroidRes.size(), diffMat);
 		for(std::size_t k = 0; k < res.size(); ++k)
 			REQUIRE(res[k] == Approx(centroidRes[k]));
@@ -263,7 +255,7 @@ TEST_CASE("Testing Filter3D with TOMesh tet input","[Filter3D]")
 		REQUIRE(testFilt(Point_3_base(2.,-2.,2.)) == Approx(0.));
 		REQUIRE(testFilt(Point_3_base(2.,2.,-2.)) == Approx(0.));
 		// Retest with the filter derivative (same results can be computed since it's a linear filter)
-		std::vector<std::map<std::size_t, double>> diffMat = testFilt.diffFilter(ptVec, rad);
+		SparseMatrix diffMat = testFilt.diffFilter(ptVec, rad);
 		res = filterWithDiff(xVec, ptVec.size(), diffMat);
 		for(std::size_t k = 0; k < res.size(); ++k)
 			REQUIRE(res[k] == Approx(nodalRes[k]));

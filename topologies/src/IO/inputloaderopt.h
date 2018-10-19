@@ -68,12 +68,14 @@ namespace InputLoader
 		double getStopTol() const {return stopTol;}
 		//! Returns the maximum number of iterations
 		unsigned getMaxIters() const {return maxIters;}
+		//! Returns the number of constraints
+		unsigned getNumConstraints() const {return numConstraints;}
 	private:
 		const std::string optimizerName;
 		double filterSize = 0., constraintPenalty = 0., penaltyPower = 1.;
 		double stepSize = 1., maxStep = 1.;
 		double stopTol = 0.01;
-		unsigned maxIters = 100;
+		unsigned maxIters = 100, numConstraints = 1;
 	};
 
 	//! Class to handle loading of TopOptGA and TopOptPGA

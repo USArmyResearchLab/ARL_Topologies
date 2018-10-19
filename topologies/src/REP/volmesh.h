@@ -77,21 +77,22 @@ public:
 	//@}
 	//! @name Data access
 	//@{
-	virtual void setRealRep(const std::vector<double>& newvals);
 	virtual void setDiscreteRep(const std::vector<int>& newvals);
-	virtual void setMPIRep(const std::vector<std::vector<int> >& discreteVars, const std::vector<std::vector<double> >& realVars);
+	virtual void setMPIRep(const std::vector<std::vector<int>>& discreteVars, const std::vector<std::vector<double>>& realVars);
 	virtual void getRealRep(std::vector<double>& realVec) const;
 	virtual void getDiscreteRep(std::vector<int>& discVec) const;
-	virtual void getMPIRep(std::vector<std::vector<int> >& discreteVars, std::vector<std::vector<double> >& realVars) const;
+	virtual void getMPIRep(std::vector<std::vector<int>>& discreteVars, std::vector<std::vector<double>>& realVars) const;
 	virtual std::size_t getDataSize() const;
 	virtual void getDataSize(std::vector<std::size_t>& sizes) const = 0;
 	virtual unsigned getDimension() const = 0;
 	virtual double computeVolumeFraction() const;
 	virtual std::vector<double> computeGradVolumeFraction() const;
-	virtual std::vector<std::map<std::size_t, double>> diffRep() const;
+	virtual std::vector<double> applyDiffRep(std::vector<double> const& elemGrad, bool usePenalization = true) const;
+	virtual HelperNS::SparseMatrix diffRep(bool usePenalization = true) const;
+	virtual bool hasAnalyticalDerivative() const {return true;}
 	virtual double getDataMagnitude() const {return 1.;}
-	virtual void getDefiningParameters(std::vector<std::vector<int> >& discreteParams,
-		std::vector<std::vector<double> >& realParams) const = 0;
+	virtual void getDefiningParameters(std::vector<std::vector<int>>& discreteParams,
+		std::vector<std::vector<double>>& realParams) const = 0;
 	virtual std::string getName() const {return getClassName();}
 	//! Returns TopOptRep implementation's class name: volmesh
 	static std::string getClassName() {return "volmesh";}
@@ -100,21 +101,21 @@ public:
 	//@{
 	virtual void filterData(std::vector<double>& valVec, double radius) const;
 	virtual void filterData(double radius);
-	virtual void boundsCheck(std::vector<double>& realVec) const;
 	//@}
 
 protected:
+	virtual std::unique_ptr<FilterBase> constructFilter() const = 0;
+	virtual void updateRealRep();
 	void initFixedVals();
 	void setFixedVals();
 	void setFixedVals(std::vector<double>& inVec) const;
 	std::vector<double> getFixedValElemMask() const;
-	void boundsCheck();
 	void setMeshOptVals(const std::vector<double>& optVals, TOMesh* pTOM) const;
 	std::vector<double> getElemDensities() const;
-	void computeDiffFilt();
+	void computeDiffFilt(FilterBase const& filt);
 	std::vector<double> getNodalAvgElemDensities() const;
-	std::vector<std::map<std::size_t,double>> getDiffNodalAvgElemDensities() const;
-	std::vector<std::map<std::size_t,double>> getIdentityFilt() const;
+	HelperNS::SparseMatrix getDiffNodalAvgElemDensities() const;
+	HelperNS::SparseMatrix getIdentityFilt() const;
 	std::vector<double> getDiffProjElemDensities() const;
 	std::vector<double> getDiffProjElemDensities(const std::vector<double>& vals) const;
 	std::vector<double> getProjElemDensities() const;
@@ -122,6 +123,8 @@ protected:
 	std::vector<double> filterDensitiesWithDiffFilt() const;
 	std::vector<Point_2_base> getElemCentroids2D() const;
 	std::vector<Point_3_base> getElemCentroids3D() const;
+	void setupQuantitiesForDiffRep(std::vector<double>& rhoe, std::vector<double>& hprime, std::vector<double>& fvmask, 
+		bool usePenalization = true) const;
 protected:
 	double threshold, filtRad; // threshold for generating discrete representation
 	GeometryTranslation::MesherData meshParams;
@@ -130,11 +133,14 @@ protected:
 	std::vector<double> penalParams, projParams;
 	std::vector<std::pair<unsigned, double>> fixedBlockVec;
 
-	std::vector<double> pixelArray, fixedVals;
-	std::vector<std::map<std::size_t,double>> diffFilt;
+	std::vector<double> fixedVals;
+	HelperNS::SparseMatrix diffFilt;
 	std::vector<std::size_t> fixedElemIDVec;
 	mutable std::unique_ptr<TOMesh> upMesh;
-	std::unique_ptr<FilterBase> upFilt, upDataFilt;
+	mutable std::unique_ptr<FilterBase> upDataFilt;
+	bool useInterpolatoryFilt;
+private:
+	typedef TopOptRep TOR;
 };
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -144,7 +150,6 @@ VolMesh<PenaltyFunc, ProjectionFunc>::VolMesh(const VolMesh<PenaltyFunc, Project
 	filtRad(copy.filtRad),
 	meshParams(copy.meshParams),
 	fileName(copy.fileName),
-	pixelArray(copy.pixelArray),
 	diffFilt(copy.diffFilt),
 	vmTORSpec(copy.vmTORSpec),
 	penalParams(copy.penalParams),
@@ -152,8 +157,8 @@ VolMesh<PenaltyFunc, ProjectionFunc>::VolMesh(const VolMesh<PenaltyFunc, Project
 	fixedBlockVec(copy.fixedBlockVec),
 	fixedElemIDVec(copy.fixedElemIDVec),
 	upMesh(copy.upMesh->clone()),
-	upFilt(copy.upFilt->clone()),
-	upDataFilt(copy.upDataFilt ? copy.upDataFilt->clone() : nullptr)
+	upDataFilt(copy.upDataFilt ? copy.upDataFilt->clone() : nullptr),
+	useInterpolatoryFilt(copy.useInterpolatoryFilt)
 {
 }
 
@@ -165,7 +170,6 @@ void VolMesh<PenaltyFunc, ProjectionFunc>::swap(VolMesh<PenaltyFunc, ProjectionF
 	std::swap(filtRad, arg2.filtRad);
 	std::swap(meshParams, arg2.meshParams);
 	fileName.swap(arg2.fileName);
-	pixelArray.swap(arg2.pixelArray);
 	std::swap(diffFilt, arg2.diffFilt);
 	std::swap(vmTORSpec, arg2.vmTORSpec);
 	penalParams.swap(arg2.penalParams);
@@ -173,8 +177,8 @@ void VolMesh<PenaltyFunc, ProjectionFunc>::swap(VolMesh<PenaltyFunc, ProjectionF
 	fixedBlockVec.swap(arg2.fixedBlockVec);
 	fixedElemIDVec.swap(arg2.fixedElemIDVec);
 	upMesh.swap(arg2.upMesh);
-	upFilt.swap(arg2.upFilt);
 	upDataFilt.swap(arg2.upDataFilt);
+	std::swap(useInterpolatoryFilt, arg2.useInterpolatoryFilt);
 }
 }//namespace
 #endif

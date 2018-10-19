@@ -32,6 +32,7 @@
 #include "IO/exotxtmeshloader.h"
 #include "coordinatesystem.h"
 #include "point3d.h"
+#include "helper.h"
 
 namespace Topologies{
 class TOMesh;
@@ -62,6 +63,8 @@ struct ExoBC
 class FEMProblem
 {
 public:
+	typedef std::vector<std::vector<std::pair<std::size_t, double>>> SparseMatrix;
+public:
 	//! @name Constructors and destructor
 	//@{
 	//! Constructor that sets up a FEMProblem using a TOMesh
@@ -85,7 +88,7 @@ public:
 	//! Returns whether or not the last problem ran successfully
 	bool validRun() const {return !invalid;}
 	//! Returns the gradient of the compliance
-	std::vector<double> gradCompliance(const Topologies::TOMesh* const inMesh, const std::vector<std::map<std::size_t, double>>& dTOR) const;
+	std::vector<double> gradCompliance(const Topologies::TOMesh* const inMesh) const;
 private:
 	typedef Eigen::MatrixXd EigenDenseMat;
 	typedef Eigen::VectorXd EigenVector;

@@ -46,6 +46,7 @@ VoxelRep<PenaltyFunc, ProjectionFunc>::VoxelRep(TORType inTORT, const InputLoade
 	nz(inputParams.getDiscSizes(2)),
 	myMET(inputParams.getMET())
 {
+	VM::useInterpolatoryFilt = myMET == metTet && VM::vmTORSpec.torUnknownLocation == ulElement && VM::filtRad == 0.;
 	finishSetup();
 }
 
@@ -57,13 +58,14 @@ VoxelRep<PenaltyFunc, ProjectionFunc>::VoxelRep(TORType inTORT, const std::vecto
 	bool error = discreteParams.empty();
 	if(!error)
 	{
-		error = discreteParams[0].size() != 4;
+		error = discreteParams[0].size() != 5;
 		if(!error)
 		{
 			nx = discreteParams[0][0];
 			ny = discreteParams[0][1];
 			nz = discreteParams[0][2];
 			myMET = (MeshElementType)discreteParams[0][3];
+			VM::useInterpolatoryFilt = (bool)discreteParams[0][4];
 		}
 		error |= discreteParams[1].size() != VM::vmTORSpec.size();
 		if(!error)
@@ -103,26 +105,24 @@ void VoxelRep<PenaltyFunc, ProjectionFunc>::finishSetup()
 	VM::upMesh = CartesianMesher::generateMesh(myMET, nx, ny, nz, width, length, height, initArray);
 	// Set up unknown array
 	if(VM::vmTORSpec.torUnknownLocation == ulNode)
-		VM::pixelArray = std::vector<double>(VM::upMesh->getNumNodes(), initVal);
+		TOR::realOptVals = std::vector<double>(VM::upMesh->getNumNodes(), initVal);
 	else
-		VM::pixelArray = initArray;
-	// Set up filter
-	VM::upFilt = std::unique_ptr<FilterBase>(new Filter3D<>(nx, ny, nz, width, length, height, 
-		VM::vmTORSpec.torUnknownLocation == ulElement));
+		TOR::realOptVals = initArray;
 	// For tetrahedral meshes, there is not a 1-to-1 map between unknowns and elements
 	// A filter is used to provide this functionality
 	// Note that for highly skewed meshes (dx != dy != dz), this may be slightly incorrect as it will average close values
-	if(myMET == metTet && VM::vmTORSpec.torUnknownLocation == ulElement && VM::filtRad == 0.)
+	std::unique_ptr<FilterBase> upFilt;
+	if(VM::useInterpolatoryFilt)
 	{
-		VM::upDataFilt = std::move(VM::upFilt);
-		VM::upFilt = std::unique_ptr<FilterBase>(new Filter3D<HelperNS::constantFunction>(nx, ny, nz, width, length, 
+		upFilt = std::unique_ptr<FilterBase>(new Filter3D<HelperNS::constantFunction>(nx, ny, nz, width, length, 
 			height, VM::vmTORSpec.torUnknownLocation == ulElement));
 		double dx = width/(double)nx, dy = length/(double)ny, dz = height/(double)nz;
-//		VM::filtRad = (1. - 1e-6)*0.5*sqrt(dx*dx + dy*dy + dz*dz);
 		VM::filtRad = 0.5*MAX(MAX(dx, dy), dz);
 	}
+	else
+		upFilt = constructFilter();
 	// Compute derivatives
-	VM::computeDiffFilt();
+	VM::computeDiffFilt(*upFilt);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -134,6 +134,13 @@ template <typename PenaltyFunc, typename ProjectionFunc>
 std::unique_ptr<TopOptRep> VoxelRep<PenaltyFunc, ProjectionFunc>::clone() const
 {
 	return std::unique_ptr<TopOptRep>(new VoxelRep(*this));
+}
+
+template <typename PenaltyFunc, typename ProjectionFunc>
+std::unique_ptr<FilterBase> VoxelRep<PenaltyFunc, ProjectionFunc>::constructFilter() const
+{
+	return std::unique_ptr<FilterBase>(new Filter3D<>(nx, ny, nz, width, length, height, 
+		VM::vmTORSpec.torUnknownLocation == ulElement));
 }
 
 // Modify
@@ -148,16 +155,19 @@ void VoxelRep<PenaltyFunc, ProjectionFunc>::refine()
 	nx *= 2;
 	ny *= 2;
 	nz *= 2;
-	VM::upFilt = std::unique_ptr<FilterBase>(new Filter3D<>(nx, ny, nz, width, length, height, 
-		VM::vmTORSpec.torUnknownLocation == ulElement));
 	if(VM::upDataFilt)
+		VM::upDataFilt.release();
+	std::unique_ptr<FilterBase> upFilt;
+	if(VM::useInterpolatoryFilt)
 	{
-		VM::upDataFilt = std::move(VM::upFilt);
-		VM::upFilt = std::unique_ptr<FilterBase>(new Filter3D<HelperNS::constantFunction>(nx, ny, nz, 
+		upFilt = std::unique_ptr<FilterBase>(new Filter3D<HelperNS::constantFunction>(nx, ny, nz, 
 			width, length, height, VM::vmTORSpec.torUnknownLocation == ulElement));
 		VM::filtRad *= 0.5;
 	}
-	VM::computeDiffFilt();
+	else
+		upFilt = std::unique_ptr<FilterBase>(new Filter3D<>(nx, ny, nz, width, length, height,
+    VM::vmTORSpec.torUnknownLocation == ulElement));
+	VM::computeDiffFilt(*upFilt);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -172,7 +182,7 @@ void VoxelRep<PenaltyFunc, ProjectionFunc>::refineElementUnknowns()
 		{
 			for(std::size_t kx = 0; kx < 2*nx; ++kx)
 			{
-				newPixelArray[kz*4*nx*ny + ky*2*nx + kx] = VM::pixelArray[kzp*nx*ny + kyp*nx + kxp];
+				newPixelArray[kz*4*nx*ny + ky*2*nx + kx] = TOR::realOptVals[kzp*nx*ny + kyp*nx + kxp];
 				kxp += kx % 2;
 			}
 			kxp = 0;
@@ -181,8 +191,8 @@ void VoxelRep<PenaltyFunc, ProjectionFunc>::refineElementUnknowns()
 		kyp = 0;
 		kzp += kz % 2;
 	}
-	VM::pixelArray = newPixelArray;
-	VM::upMesh = CartesianMesher::generateMesh(myMET, 2*nx, 2*ny, 2*nz, width, length, height, VM::pixelArray);
+	TOR::realOptVals = newPixelArray;
+	VM::upMesh = CartesianMesher::generateMesh(myMET, 2*nx, 2*ny, 2*nz, width, length, height, TOR::realOptVals);
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -192,13 +202,13 @@ void VoxelRep<PenaltyFunc, ProjectionFunc>::refineNodalUnknowns()
 	std::vector<double> newPixelArray((2*nx + 1)*(2*ny + 1)*(2*nz + 1), 0.);
 	VM::upMesh = CartesianMesher::generateMesh(myMET, 2*nx, 2*ny, 2*nz, width, length, height, 
 										std::vector<double>(8*nx*ny*nz, 0.));
-	PostProcess::VoxelInterp voxi(VM::pixelArray, nx, ny, nz, width, length, height, VM::threshold);
+	PostProcess::VoxelInterp voxi(TOR::realOptVals, nx, ny, nz, width, length, height, VM::threshold);
 	for(std::size_t k = 0; k < VM::upMesh->getNumNodes(); ++k)
 	{
 		Point_3_base p = VM::upMesh->getNode3D(k);
 		newPixelArray[k] = VM::threshold - voxi(p);
 	}
-	VM::pixelArray = newPixelArray;
+	TOR::realOptVals = newPixelArray;
 }
 
 template <typename PenaltyFunc, typename ProjectionFunc>
@@ -241,7 +251,7 @@ void VoxelRep<PenaltyFunc, ProjectionFunc>::getDefiningParameters(std::vector<st
                                      std::vector<std::vector<double> >& realParams) const
 {
 	discreteParams.resize(2);
-	discreteParams[0] = {(int)nx, (int)ny, (int)nz, (int)myMET};
+	discreteParams[0] = {(int)nx, (int)ny, (int)nz, (int)myMET, (int)VM::useInterpolatoryFilt};
 	discreteParams[1] = VM::vmTORSpec.toVec();
 	realParams.resize(3);
 	realParams[0] = {VM::threshold, VM::filtRad, width, length, height};

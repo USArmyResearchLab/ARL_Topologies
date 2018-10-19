@@ -32,8 +32,6 @@ if ( CGAL_FOUND )
 		set(TOPOLOGIESCORE_LIB ${TOPOLOGIES_ROOT}/lib/libtopologiescore.so)
 	endif(NOT DEFINED TOPOLOGIES_ROOT)
 # Library locations
-	set(NLOPT_LIB_DIR ${NLOPT_ROOT}/lib )
-	set(NLOPT_LIB ${NLOPT_LIB_DIR}/libnlopt.so)
 	set(CATCH_INC_DIR ${CATCH_ROOT}/single_include)
 	set (PUGIXML_INC_DIR ${PUGIXML_ROOT}/include)
 	set (PUGIXML_LIB_DIR ${PUGIXML_ROOT}/lib64)
@@ -65,7 +63,6 @@ if ( CGAL_FOUND )
 # Link the executable to CGAL and third-party libraries
 	target_link_libraries(femofv ${PUGIXML_LIB} ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES} )
 # Set subdirectories, contain unit tests
-	link_directories(${NLOPT_LIB_DIR})
 	include_directories (BEFORE ${CATCH_INC_DIR})
 if(COMPILE_TESTS)
 	enable_testing()

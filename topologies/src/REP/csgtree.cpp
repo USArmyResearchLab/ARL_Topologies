@@ -356,9 +356,9 @@ void CSGTreeRep::get2DSegments(std::vector<Mesh_Segment_2>& segVec) const
 			segVec.push_back(seg);
 		}
 	}
-	std::vector<Mesh_Segment_2> boundaryVec;
-	getBoundary(boundaryVec);
-	segVec.insert(segVec.end(), boundaryVec.begin(), boundaryVec.end());
+//	std::vector<Mesh_Segment_2> boundaryVec;
+//	getBoundary(boundaryVec);
+//	segVec.insert(segVec.end(), boundaryVec.begin(), boundaryVec.end());
 }
 
 GeometryTranslation::MesherData CSGTreeRep::getDefaultMeshParams() const
@@ -451,41 +451,28 @@ void CSGTreeRep::unscaleParameters(std::vector<double>& newvals) const
 }
 
 // Data access
-void CSGTreeRep::setRealRep(const std::vector<double>& newvals)
+void CSGTreeRep::updateRealRep()
 {
-	std::vector<double> scaledvals = newvals;
-	boundsCheck(scaledvals);
-//std::cout << "scaling-----------------------------" << std::endl;
-//	std::cout << "vals_beforeUnscale = [";
-//  for(auto it = scaledvals.begin(); it != scaledvals.end(); ++it)
-//    std::cout << *it << " ";
-//  std::cout << "];" << std::endl;
-	scaleParameters(scaledvals);
-//	std::cout << "vals_after = [";
-//  for(auto it = scaledvals.begin(); it != scaledvals.end(); ++it)
-//    std::cout << *it << " ";
-//  std::cout << "];" << std::endl;
-
+	affineVec = realOptVals;
+	scaleParameters(affineVec);
 	if(!useAffine)
 	{
-		std::vector<double>::const_iterator vit = scaledvals.begin();
-		rootNode->setVector(vit, scaledvals.end());
+		std::vector<double>::const_iterator vit = affineVec.begin();
+		rootNode->setVector(vit, affineVec.end());
 	}
-	else
-		affineVec = scaledvals;
 }
 
 void CSGTreeRep::setDiscreteRep(const std::vector<int>& newvals)
 {
 }
 
-void CSGTreeRep::setMPIRep(const std::vector<std::vector<int> >& discreteVars, const std::vector<std::vector<double> >& realVars)
+void CSGTreeRep::setMPIRep(const std::vector<std::vector<int>>& discreteVars, const std::vector<std::vector<double>>& realVars)
 {
 	// First check realVars size.  
 	// The MPI code may send only the realRep rather than the full MPIRep
 	// This is a little clunky now, and should be fixed
 	if(realVars.size() == 1)
-		setRealRep(realVars[0]);
+		setRealRep(realVars[0].begin(), realVars[0].end());
 	else
 	{
 		assert(discreteVars.size() == 2);
@@ -609,12 +596,6 @@ void CSGTreeRep::filterData(double radius)
 {
 }
 
-void CSGTreeRep::boundsCheck(std::vector<double>& realVec) const
-{
-	std::replace_if(realVec.begin(), realVec.end(), HelperNS::greaterThan1, 1.);
-	std::replace_if(realVec.begin(), realVec.end(), HelperNS::lessThan0, 0.);
-}
-
 Nef_polyhedron_2 CSGTreeRep::getNefPoly() const
 {
 	if(!useAffine)
@@ -675,8 +656,8 @@ void CSGTreeRep::setMeshOptVals() const
 				it->info().optVal = minDensity;
 			if(shapesAreHoles)
 				it->info().optVal = 1. - it->info().optVal;
-    }
-  }
+		}
+	}
 }
 }
 
